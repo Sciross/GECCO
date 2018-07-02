@@ -3,10 +3,10 @@ classdef Information < handle
         Model_Name = "Queen";
         Version_Number = 0.2;
         Version_Codename = "House";
-        OutputFilepath = "";
-        OutputFilename = "";
-        OutputFile = "";
-        InputFile = "";
+        Output_Filepath = "";
+        Output_Filename = "";
+        Output_File = "";
+        Input_File = "";
     end
     properties (Hidden=true)
         ModelDirectory
@@ -18,11 +18,11 @@ classdef Information < handle
         
         %%
         function SortOutFilepath(self);
-            if ~strcmp(self.OutputFilename,"") && strcmp(self.OutputFilepath,"");
-                self.OutputFilepath = ".";
+            if ~strcmp(self.Output_Filename,"") && strcmp(self.Output_Filepath,"");
+                self.Output_Filepath = ".";
             end
-            if ~strcmp(self.OutputFilepath,"") && ~strcmp(self.OutputFilepath,"");
-                self.OutputFile = strcat(self.OutputFilepath,"\",self.OutputFilename);
+            if ~strcmp(self.Output_Filepath,"") && ~strcmp(self.Output_Filepath,"");
+                self.Output_File = strcat(self.Output_Filepath,"\",self.Output_Filename);
             end
         end
         function Load(self,Filename);

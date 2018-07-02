@@ -29,17 +29,17 @@ Model.Conditions.Presents.Carbonate_Chemistry.Alkalinity = [y(7);y(8)];
 Model.Conditions.Presents.Carbonate_Chemistry.Temperature = [y(10);y(11)];
 Model.Conditions.Presents.Carbonate_Chemistry.Phosphate = [y(3);y(4)];
 
-Model.Conditions.Presents.Carbonate_Chemistry.Coefficients = GetCoefficients(Model.Conditions.Presents.Carbonate_Chemistry);
-% Model.Conditions.Presents.Carbonate_Chemistry.SetCoefficients();
-[Model.Conditions.Presents.Carbonate_Chemistry.CCKs,Model.Conditions.Presents.Carbonate_Chemistry.CCK_Depth_Correction] = GetCCKs(Model.Conditions.Presents.Carbonate_Chemistry.Salinity,Model.Conditions.Presents.Carbonate_Chemistry.Temperature,Model.Conditions.Presents.Carbonate_Chemistry.Pressure,Model.Conditions.Presents.Carbonate_Chemistry.Pressure_Correction,Model.Conditions.Presents.Carbonate_Chemistry.Coefficients);
-% Model.Conditions.Presents.Carbonate_Chemistry.SetCCKs();
-[Model.Conditions.Presents.Carbonate_Chemistry.pH,Model.Conditions.Presents.Carbonate_Chemistry.CO2,~,~,Model.Conditions.Presents.Carbonate_Chemistry.Saturation_State_C,~] = Model.Conditions.Presents.Carbonate_Chemistry.Solver_Handle(Model.Conditions.Presents.Carbonate_Chemistry.DIC,Model.Conditions.Presents.Carbonate_Chemistry.Alkalinity,{Model.Conditions.Presents.Carbonate_Chemistry.Boron,Model.Conditions.Presents.Carbonate_Chemistry.Silica,NaN,Model.Conditions.Presents.Carbonate_Chemistry.Calcium,Model.Conditions.Presents.Carbonate_Chemistry.Phosphate},Model.Conditions.Presents.Carbonate_Chemistry.HIn,Model.Conditions.Presents.Carbonate_Chemistry.CCKs,Model.Conditions.Presents.Carbonate_Chemistry.Iteration_Flag,Model.Conditions.Presents.Carbonate_Chemistry.Tolerance);
-% Model.Conditions.Presents.Carbonate_Chemistry.Solve();
-Model.Conditions.Presents.Carbonate_Chemistry.pH = Model.Conditions.Presents.Carbonate_Chemistry.pH;
+% Model.Conditions.Presents.Carbonate_Chemistry.Coefficients = GetCoefficients(Model.Conditions.Presents.Carbonate_Chemistry);
+Model.Conditions.Presents.Carbonate_Chemistry.SetCoefficients();
+% [Model.Conditions.Presents.Carbonate_Chemistry.CCKs,Model.Conditions.Presents.Carbonate_Chemistry.CCK_Depth_Correction] = GetCCKs(Model.Conditions.Presents.Carbonate_Chemistry.Salinity,Model.Conditions.Presents.Carbonate_Chemistry.Temperature,Model.Conditions.Presents.Carbonate_Chemistry.Pressure,Model.Conditions.Presents.Carbonate_Chemistry.Pressure_Correction,Model.Conditions.Presents.Carbonate_Chemistry.Coefficients);
+Model.Conditions.Presents.Carbonate_Chemistry.SetCCKs();
+% [Model.Conditions.Presents.Carbonate_Chemistry.pH,Model.Conditions.Presents.Carbonate_Chemistry.CO2,~,~,Model.Conditions.Presents.Carbonate_Chemistry.Saturation_State_C,~] = Model.Conditions.Presents.Carbonate_Chemistry.Solver_Handle(Model.Conditions.Presents.Carbonate_Chemistry.DIC,Model.Conditions.Presents.Carbonate_Chemistry.Alkalinity,{Model.Conditions.Presents.Carbonate_Chemistry.Boron,Model.Conditions.Presents.Carbonate_Chemistry.Silica,NaN,Model.Conditions.Presents.Carbonate_Chemistry.Calcium,Model.Conditions.Presents.Carbonate_Chemistry.Phosphate},Model.Conditions.Presents.Carbonate_Chemistry.HIn,Model.Conditions.Presents.Carbonate_Chemistry.CCKs,Model.Conditions.Presents.Carbonate_Chemistry.Iteration_Flag,Model.Conditions.Presents.Carbonate_Chemistry.Tolerance);
+Model.Conditions.Presents.Carbonate_Chemistry.Solve();
+% Model.Conditions.Presents.Carbonate_Chemistry.pH = Model.Conditions.Presents.Carbonate_Chemistry.pH;
 Model.Conditions.Presents.Carbonate_Chemistry.HIn = (10.^(-Model.Conditions.Presents.Carbonate_Chemistry.pH))*1000;
 
-Model.Conditions.Presents.Carbonate_Chemistry.Lysocline = Model.Conditions.Presents.Carbonate_Chemistry.Lysocline_Solver_Handle(Model.Conditions.Presents.Carbonate_Chemistry.DIC(2),Model.Conditions.Presents.Carbonate_Chemistry.Depths,Model.Conditions.Presents.Carbonate_Chemistry.Temperature,Model.Conditions.Presents.Carbonate_Chemistry.Salinity,Model.Conditions.Presents.Carbonate_Chemistry.pH,Model.Conditions.Presents.Carbonate_Chemistry.Calcium,Model.Conditions.Presents.Carbonate_Chemistry.Coefficients,Model.Conditions.Presents.Carbonate_Chemistry.Lysocline_In,Model.Conditions.Presents.Carbonate_Chemistry.Lysocline_Iteration_Flag,Model.Conditions.Presents.Carbonate_Chemistry.Lysocline_Tolerance);
-% Model.Conditions.Presents.Carbonate_Chemistry.Solve_Lysocline();
+% Model.Conditions.Presents.Carbonate_Chemistry.Lysocline = Model.Conditions.Presents.Carbonate_Chemistry.Lysocline_Solver_Handle(Model.Conditions.Presents.Carbonate_Chemistry.DIC(2),Model.Conditions.Presents.Carbonate_Chemistry.Depths,Model.Conditions.Presents.Carbonate_Chemistry.Temperature,Model.Conditions.Presents.Carbonate_Chemistry.Salinity,Model.Conditions.Presents.Carbonate_Chemistry.pH,Model.Conditions.Presents.Carbonate_Chemistry.Calcium,Model.Conditions.Presents.Carbonate_Chemistry.Coefficients,Model.Conditions.Presents.Carbonate_Chemistry.Lysocline_In,Model.Conditions.Presents.Carbonate_Chemistry.Lysocline_Iteration_Flag,Model.Conditions.Presents.Carbonate_Chemistry.Lysocline_Tolerance);
+Model.Conditions.Presents.Carbonate_Chemistry.Solve_Lysocline();
 Model.Conditions.Presents.Carbonate_Chemistry.Lysocline_In = Model.Conditions.Presents.Carbonate_Chemistry.Lysocline;
 
 
@@ -62,10 +62,10 @@ DeepArray(1001-(round(y(18)/10))+(Model.Conditions.Presents.Architecture.Ocean_D
 DeepArray(1001+round(Model.Conditions.Presents.Carbonate_Chemistry.Lysocline/10)) = rem(Model.Conditions.Presents.Carbonate_Chemistry.Lysocline+5,10)/10;
 
 %% Weathering
-Silicate_Weathering = y(12)*y(14)*Model.Conditions.Presents.Weathering.Silicate_Weatherability;
+Silicate_Weathering = y(12)*y(13)*Model.Conditions.Presents.Weathering.Silicate_Weatherability;
 Silicate_Unearthed = Silicate_Weathering.*Model.Conditions.Presents.Weathering.Silicate_Replacement;
 
-Carbonate_Weathering = (1-OceanArray).*(y_Sub.*Model.Conditions.Presents.Weathering.Carbonate_Exposure).*y(15).*Model.Conditions.Presents.Weathering.Carbonate_Weatherability;
+Carbonate_Weathering = (1-OceanArray).*(y_Sub.*Model.Conditions.Presents.Weathering.Carbonate_Exposure).*y(14).*Model.Conditions.Presents.Weathering.Carbonate_Weatherability;
 
 %% Carbon Fluxes
 % POC
@@ -76,7 +76,7 @@ POCBurialFlux = BiologicalPOCExport.*Model.Conditions.Presents.Carbon.POC_Burial
 BiologicalPICExport = BiologicalExport*Model.Conditions.Presents.Carbon.Redfield_Ratio*Model.Conditions.Presents.Carbon.Production_Ratio;
 
 % Deep Remineralisation
-Ocean_Area_Fraction = 1-(CalculateRemin_MyLinear(Model.Conditions.Presents.Architecture.Hypsometric_Interpolation_Matrix,-y(18))/100);
+Ocean_Area_Fraction = 1-(CalculateRemin_MyLinear(Model.Conditions.Presents.Architecture.Hypsometric_Interpolation_Matrix,-y(17))/100);
 Fraction_Above_Lysocline = (CalculateRemin_MyLinear(Model.Conditions.Presents.Architecture.Hypsometric_Interpolation_Matrix,Model.Conditions.Presents.Carbonate_Chemistry.Lysocline)/100);
 Model.Conditions.Presents.Carbon.PIC_Burial(2,1) = ((Fraction_Above_Lysocline-(1-Ocean_Area_Fraction))./Ocean_Area_Fraction)-(Model.Conditions.Presents.Carbon.PIC_Remineralisation(1)+Model.Conditions.Presents.Carbon.PIC_Burial(1,1));
 if Model.Conditions.Presents.Carbon.PIC_Burial(2,1)<0;
@@ -152,11 +152,11 @@ dy_Outgas(OutBoxes(1):OutBoxes(2)) = (Outgassing_Added.*Model.Conditions.Present
 Outgassing = ((y_Outgas(1+floor((t)/Model.Conditions.Presents.Outgassing.Temporal_Resolution))/Model.Conditions.Presents.Outgassing.Temporal_Resolution));
 
 %% Ice
-Ice_Radius = ((3*Model.Conditions.Presents.Ice.Water_Molar_Mass*y(17))./(Model.Conditions.Presents.Ice.Density.*tand(Model.Conditions.Presents.Ice.Angle))).^(1/3);
+Ice_Radius = ((3*Model.Conditions.Presents.Ice.Water_Molar_Mass*y(16))./(Model.Conditions.Presents.Ice.Density.*tand(Model.Conditions.Presents.Ice.Angle))).^(1/3);
 Ice_Height = Ice_Radius.*tand(Model.Conditions.Presents.Ice.Angle);
 Ice_Area = pi.*Ice_Radius.*sqrt(Ice_Radius.^2 + Ice_Height.^2);
 
-Ice_Height_Top = Ice_Height-y(19);
+Ice_Height_Top = Ice_Height-y(18);
 if Ice_Height_Top>0;
     Ice_Radius_Top = Ice_Height_Top./tand(Model.Conditions.Presents.Ice.Angle);
     Ice_Area_Top = pi.*Ice_Radius_Top.*sqrt(Ice_Radius_Top.^2 + Ice_Height_Top.^2);
@@ -165,7 +165,7 @@ else
     Ice_Radius_Top = 0;
     Ice_Area_Top = 0;
 end
-Ice_Flux = (Ice_Area_Top.*Model.Conditions.Presents.Ice.Growth_Rate)-(y(17).*Model.Conditions.Presents.Ice.Melt_Rate);
+Ice_Flux = (Ice_Area_Top.*Model.Conditions.Presents.Ice.Growth_Rate)-(y(16).*Model.Conditions.Presents.Ice.Melt_Rate);
 
 %% CO2
 CO2_Flux = GasFlux + Outgassing - (2*Silicate_Weathering) - sum(Carbonate_Weathering);
@@ -182,7 +182,7 @@ dy(5:6) = DIC_Flux./Model.Conditions.Presents.Architecture.Ocean_Volumes;
 % Alkalinity
 dy(7:8) = Alkalinity_Flux./Model.Conditions.Presents.Architecture.Ocean_Volumes;
 % Equilibrium temperature
-T_eq = ((Model.Conditions.Presents.Energy.Solar_Constant.*(1-Model.Conditions.Presents.Energy.Albedo) + (4.*Model.Conditions.Presents.Energy.Climate_Sensitivity.*y(16)))./(4.*Model.Conditions.Presents.Energy.Emissivity*Model.Conditions.Presents.Energy.Stefan_Boltzmann)).^0.25;
+T_eq = ((Model.Conditions.Presents.Energy.Solar_Constant.*(1-Model.Conditions.Presents.Energy.Albedo) + (4.*Model.Conditions.Presents.Energy.Climate_Sensitivity.*y(15)))./(4.*Model.Conditions.Presents.Energy.Emissivity*Model.Conditions.Presents.Energy.Stefan_Boltzmann)).^0.25;
 T_eq_Ocean = T_eq-Model.Conditions.Presents.Energy.Ocean_Temperature_Offset;
 % Temperature
 dy(9) = (T_eq-y(9))./Model.Conditions.Presents.Energy.Atmosphere_Equilibration_Timescale;
@@ -191,16 +191,16 @@ dy(10:11) = (T_eq_Ocean-y(10:11))./Model.Conditions.Presents.Energy.Ocean_Equili
 dy(12) = Model.Conditions.Presents.Weathering.Silicate_Replenishment + Silicate_Unearthed - Silicate_Weathering;
 % dy(13) = sum(Carbonate_Uplifted)/(1/(1-Model.Conditions.Presents.Carbonate_Replacement)) + Carbonate_Unearthed - Carbonate_Weathering;
 % Weathering fraction
-dy(14) = ((Model.Conditions.Presents.Weathering.Silicate_Weathering_Coefficients(1).*Model.Conditions.Presents.Weathering.Silicate_Weathering_Coefficients(2).*exp(Model.Conditions.Presents.Weathering.Silicate_Weathering_Coefficients(2).*y(9)))*(dy(9)))/2;
-dy(15) = ((Model.Conditions.Presents.Weathering.Carbonate_Weathering_Coefficients(1).*Model.Conditions.Presents.Weathering.Carbonate_Weathering_Coefficients(2).*exp(Model.Conditions.Presents.Weathering.Carbonate_Weathering_Coefficients(2).*y(9)))*(dy(9)))/2;
+dy(13) = ((Model.Conditions.Presents.Weathering.Silicate_Weathering_Coefficients(1).*Model.Conditions.Presents.Weathering.Silicate_Weathering_Coefficients(2).*exp(Model.Conditions.Presents.Weathering.Silicate_Weathering_Coefficients(2).*y(9)))*(dy(9)))/2;
+dy(14) = ((Model.Conditions.Presents.Weathering.Carbonate_Weathering_Coefficients(1).*Model.Conditions.Presents.Weathering.Carbonate_Weathering_Coefficients(2).*exp(Model.Conditions.Presents.Weathering.Carbonate_Weathering_Coefficients(2).*y(9)))*(dy(9)))/2;
 % Radiative forcing
-dy(16) = Model.Conditions.Presents.Energy.Radiative_Sensitivity.*1.4427.*log((y(1)+dy(1))/y(1));
+dy(15) = Model.Conditions.Presents.Energy.Radiative_Sensitivity.*1.4427.*log((y(1)+dy(1))/y(1));
 % Ice
-dy(17) = Ice_Flux;
+dy(16) = Ice_Flux;
 % Sea level
-dy(18) = (-((Ice_Flux*Model.Conditions.Presents.Ice.Water_Molar_Mass)/Model.Conditions.Presents.Ice.Density)./Model.Conditions.Presents.Architecture.Ocean_Area) + Model.Conditions.Presents.Ice.Sea_Level_Forcing;
+dy(17) = (-((Ice_Flux*Model.Conditions.Presents.Ice.Water_Molar_Mass)/Model.Conditions.Presents.Ice.Density)./Model.Conditions.Presents.Architecture.Ocean_Area) + Model.Conditions.Presents.Ice.Sea_Level_Forcing;
 % Snow Line
-dy(19) = Model.Conditions.Presents.Ice.Snow_Line_Sensitivity*dy(9);
+dy(18) = Model.Conditions.Presents.Ice.Snow_Line_Sensitivity*dy(9);
 
 %% Assign Globals
 % Model.Conditions.Presents.Carbonate_Chemistry.HIn = (10.^(-Model.Conditions.Presents.Carbonate_Chemistry.pH))*1000;
@@ -212,5 +212,5 @@ if any(isnan(y_Sub)) || any(y_Sub<0) || any(isnan(dy)) || any(y(1:8)<0) || any(~
   error('Something broke');
 end
 
-Model.Conditions.Presents.Phosphate.Riverine_Concentration = Model.Conditions.Constants.Phosphate.Riverine_Concentration*(y(14)./Model.Conditions.Initials.Silicate_Weathering_Fraction);
+Model.Conditions.Presents.Phosphate.Riverine_Concentration = Model.Conditions.Constants.Phosphate.Riverine_Concentration*(y(13)./Model.Conditions.Initials.Silicate_Weathering_Fraction);
 end

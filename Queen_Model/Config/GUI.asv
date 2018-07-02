@@ -168,7 +168,7 @@ classdef GUI < handle;
             end
             if OutputFilepath~=0;
                 self.OutputFilepathUI.String = OutputFilepath;
-                self.Gecco.Information.Output_Filepath = OutputFilepath;
+                self.Gecco.Information.OutputFilepath = OutputFilepath;
             end
         end
         % Reads in a file and sets the attributes
@@ -188,8 +188,8 @@ classdef GUI < handle;
         end
         function SetInputFile(self,src,event);
             if InputFilename~=0;
-                self.Gecco.Information.Input_File = [InputFilepath,InputFilename];
-                self.InputFileUI.String = self.Gecco.Information.Input_File;
+                self.Gecco.Information.InputFile = [InputFilepath,InputFilename];
+                self.InputFileUI.String = self.Gecco.Information.InputFile;
             end
         end
         function SetOutputFileCallback(self,src,event);
@@ -229,7 +229,7 @@ classdef GUI < handle;
             end
         end
         function SetOutputFilename(self,src,event);
-            self.Gecco.Information.Output_Filename = src.String;
+            self.Gecco.Information.OutputFilename = src.String;
         end
         
         
@@ -262,7 +262,7 @@ classdef GUI < handle;
                 if ~strcmp(ValidFilepath,"");
                     ValidFilepathWithNC = self.CheckFilenameEndNC(ValidFilepath);
                     self.SplashInputFileUI.String = ValidFilepathWithNC;
-                    self.Gecco.Information.Input_File = ValidFilepathWithNC;
+                    self.Gecco.Information.InputFile = ValidFilepathWithNC;
                     self.SplashInputFileUI.ForegroundColor = self.Colours.black;
                 elseif strcmp(src.String,"");
                     self.SelectiveClear(src,event);
@@ -272,7 +272,7 @@ classdef GUI < handle;
             elseif strcmp(src.Tag,"SplashOutputFilepathBrowseButton") || strcmp(src.Tag,"SplashOutputFilepath");
                 if ~strcmp(ValidFilepath,"");
                     self.SplashOutputFilepathUI.String = ValidFilepath;
-                    self.Gecco.Information.Output_Filepath = ValidFilepath;
+                    self.Gecco.Information.OutputFilepath = ValidFilepath;
                     self.SplashOutputFilepathUI.ForegroundColor = self.Colours.black;
                 elseif strcmp(src.String,"");
                     self.SelectiveClear(src,event);                
@@ -283,7 +283,7 @@ classdef GUI < handle;
                 if ~strcmp(ValidFilepath,"");
                     ValidFilepathWithNC = self.CheckFilenameEndNC(ValidFilepath);
                     self.SplashOutputFilenameUI.String = ValidFilepathWithNC;
-                    self.Gecco.Information.Output_Filename = ValidFilepathWithNC;
+                    self.Gecco.Information.OutputFilename = ValidFilepathWithNC;
                     self.SplashOutputFilenameUI.ForegroundColor = self.Colours.black;
                 elseif strcmp(src.String,"");
                     self.SelectiveClear(src,event);                
@@ -328,26 +328,26 @@ classdef GUI < handle;
             end
         end
         function SetSplashPaths(self);
-            if strcmp(self.Gecco.Information.Input_File,"") || isempty(self.Gecco.Information.Input_File);
+            if strcmp(self.Gecco.Information.InputFile,"") || isempty(self.Gecco.Information.InputFile);
                 self.SplashInputFileUI.String = "Input File";
             else
-                self.SplashInputFileUI.String = self.Gecco.Information.Input_File;
+                self.SplashInputFileUI.String = self.Gecco.Information.InputFile;
                 self.SplashInputFileUI.Enable = "On";
                 self.SplashInputFileUI.ForegroundColor = self.Colours.black;
             end
             
-            if strcmp(self.Gecco.Information.Output_Filepath,"") || isempty(self.Gecco.Information.Output_Filepath);
+            if strcmp(self.Gecco.Information.OutputFilepath,"") || isempty(self.Gecco.Information.OutputFilepath);
                 self.SplashOutputFilepathUI.String = "Output Filepath";
             else
-                self.SplashOutputFilepathUI.String = self.Gecco.Information.Output_Filepath;
+                self.SplashOutputFilepathUI.String = self.Gecco.Information.OutputFilepath;
                 self.SplashOutputFilepathUI.Enable = "On";
                 self.SplashOutputFilepathUI.ForegroundColor = self.Colours.black;
             end
             
-            if strcmp(self.Gecco.Information.Output_Filename,"") || isempty(self.Gecco.Information.Output_Filename);
+            if strcmp(self.Gecco.Information.OutputFilename,"") || isempty(self.Gecco.Information.OutputFilename);
                 self.SplashOutputFilenameUI.String = "Output Filename";
             else
-                self.SplashOutputFilenameUI.String = self.Gecco.Information.Output_Filename;
+                self.SplashOutputFilenameUI.String = self.Gecco.Information.OutputFilename;
                 self.SplashOutputFilenameUI.Enable = "On";
                 self.SplashOutputFilenameUI.ForegroundColor = self.Colours.black;
             end
@@ -590,7 +590,7 @@ classdef GUI < handle;
             end
         end
         function LoadCondType(self,src,event);
-            File = self.Gecco.Information.Input_File;
+            File = self.Gecco.Information.InputFile;
             if ~strcmp(File,"");
                 self.Gecco.Runs(self.SelectedRun).Regions.Conditions.(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value}).Load(File);
             else
@@ -598,7 +598,7 @@ classdef GUI < handle;
             end
         end
         function LoadCondGroup(self,src,event);
-            File = self.Gecco.Information.Input_File;
+            File = self.Gecco.Information.InputFile;
             if ~strcmp(File,"");
                 if strcmp(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value},"Initials") || strcmp(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value},"Functionals");
                     self.Gecco.Runs(self.SelectedRun).Regions.Conditions.(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value}).Load(File);
@@ -614,7 +614,7 @@ classdef GUI < handle;
             end
         end
         function LoadCond(self,src,event);
-            File = self.Gecco.Information.Input_File;
+            File = self.Gecco.Information.InputFile;
             if ~strcmp(File,"");
                 if strcmp(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value},"Initials") || strcmp(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value},"Functionals");
                     self.Gecco.Runs(self.SelectedRun).Regions.Conditions.(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value}).LoadIndividual(File,self.CondSelectorUI.String{self.CondSelectorUI.Value});
@@ -625,7 +625,7 @@ classdef GUI < handle;
             end
         end
         function LoadCondFinal(self,src,event);
-            File = self.Gecco.Information.Input_File;
+            File = self.Gecco.Information.InputFile;
             if ~strcmp(File,"");
                 self.Gecco.Runs(self.SelectedRun).Regions.Conditions.(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value}).LoadFinal(File);
             else

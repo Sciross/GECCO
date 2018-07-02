@@ -68,11 +68,8 @@ classdef Region < matlab.mixin.Copyable
         end
         
         %% Saving Data
-        function SaveData(self,Info,Run_Index,Region_Index);
-%             if isstring(Info);
-%                 Info = char(Info);
-%             end
-            FileID = netcdf.open(Info.Output_File,'WRITE');
+        function SaveData(self,Filename,Run_Index,Region_Index);
+            FileID = netcdf.open(Filename,'WRITE');
             
             % Specify start and stride
             Start = [0,0,Region_Index-1,Run_Index-1];
@@ -93,9 +90,9 @@ classdef Region < matlab.mixin.Copyable
             
             netcdf.close(FileID);
         end
-        function SaveConstants(self,Info,Region_Index,Run_Index);
+        function SaveConstants(self,Filename,Run_Index,Region_Index);
             % Open file
-            FileID = netcdf.open(Info.Output_File,'WRITE');
+            FileID = netcdf.open(Filename,'WRITE');
             
             % Specify start and stride
             Start = [0,0,Region_Index-1,Run_Index-1];
@@ -123,7 +120,7 @@ classdef Region < matlab.mixin.Copyable
 
             netcdf.close(FileID);
         end
-        function SaveTransients(self,Filename,Region_Index,Run_Index);
+        function SaveTransients(self,Filename,Run_Index,Region_Index);
             % Open file
             FileID = netcdf.open(Filename,'WRITE');
             
@@ -160,18 +157,18 @@ classdef Region < matlab.mixin.Copyable
             
             % Save attributes
 %             netcdf.putAtt(FileID,GlobalID,'Model',self.Model);
-            netcdf.putAtt(FileID,GlobalID,'Version_Number',Version_Number);
-            netcdf.putAtt(FileID,GlobalID,'Version_Codename',char(Version_Codename));
+            netcdf.putAtt(FileID,GlobalID,'Version_Number',self.Information.Version_Number);
+            netcdf.putAtt(FileID,GlobalID,'Version_Codename',char(self.Information.Version_Codename));
             
 %             netcdf.putAtt(FileID,GlobalID,'Core',self.Core);
 %             netcdf.putAtt(FileID,GlobalID,'Solver',self.Solver);
             
             netcdf.close(FileID);
         end
-        function Save(self,Information,Region_Index,Run_Index);
-            self.SaveAttributes(Information.Output_File,Information.Version_Number,Information.Version_Codename);
-            self.SaveData(Information,Region_Index,Run_Index);
-            self.SaveConstants(Information,Region_Index,Run_Index);
+        function Save(self,Filename,Run_Index,Region_Index,Version_Number,Version_Codename);
+            self.SaveAttributes(Filename);
+            self.SaveData(Filename,Run_Index,Region_Index);
+            self.SaveConstants(Filename,Run_Index,Region_Index);
 %             self.SaveTransients(Filename,Run_Index,Region_Index);
         end
         

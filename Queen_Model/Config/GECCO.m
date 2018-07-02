@@ -166,7 +166,7 @@ classdef GECCO < handle
             netcdf.close(FileID);
         end
         
-        function AddParameterGroup(Filename,ParamGroupNames);   
+        function AddParameterGroup(Filename,ParamGroupNames);
             FileID = netcdf.open(Filename,'WRITE');     
             netcdf.reDef(FileID);
             
@@ -297,7 +297,6 @@ classdef GECCO < handle
             
             netcdf.close(FileID);
         end
-        
         
         function AddPerturbationsGroup(Filename,ParamGroupNames);
             FileID = netcdf.open(Filename,'WRITE');
@@ -657,7 +656,7 @@ classdef GECCO < handle
             % Whole file
             if self.ShouldSaveFlag;
                 if self.SaveToSameFileFlag;
-                    if strcmp(self.Information.OutputFile,"");
+                    if strcmp(self.Information.Output_File,"");
                         SameFileFlag = 1;
                         if self.UsedGUIFlag;
                             Gui.UpdateLogBox("Save to same file output file is empty");
@@ -785,10 +784,10 @@ classdef GECCO < handle
                     % Save data to one file when each run is done
                     if self.ShouldSaveFlag;
                         if self.SaveToSameFileFlag;
-                            self.Runs(Run_Index).Save(self.Information.OutputFile);
+                            self.Runs(Run_Index).Regions(1).Save(self.Information,1,Run_Index);
                         end
                         if self.SaveToRunFilesFlag;
-                            self.Runs(Run_Index).Save(self.Runs(Run_Index).Information.OutputFile);
+                            self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information.OutputFile);
                         end
                     end
                                         
@@ -812,8 +811,8 @@ classdef GECCO < handle
         %% Saving
         function DeleteExistingFile(self); 
             if self.ShouldSaveFlag && self.SaveToSameFileFlag;
-                if self.CheckFileExists(self.Information.OutputFile);
-                    delete(char(self.Information.OutputFile));
+                if self.CheckFileExists(self.Information.Output_File);
+                    delete(char(self.Information.Output_File));
                 end
             end
         end
@@ -896,7 +895,7 @@ classdef GECCO < handle
             end
         end
         function SelfPrepareNetCDF(self);
-            File = self.Information.OutputFile;
+            File = self.Information.Output_File;
             Parameter_Group_Names = self.Runs(1).Regions(1).Conditions.GetShallowNames(self.Runs(1).Regions(1).Conditions.Constants);
             Parameter_Names = self.Runs(1).Regions(1).Conditions.GetDeepNames(self.Runs(1).Regions(1).Conditions.Constants);
             Maximum_Data_Sizes = self.GetMaximumDimensionSizes();
@@ -929,17 +928,16 @@ classdef GECCO < handle
             self.Runs(Run_Index).Regions(Region_Index).Outputs.Atmosphere_Temperature = Data(10,:);
             self.Runs(Run_Index).Regions(Region_Index).Outputs.Ocean_Temperature = Data(11:12,:);
             self.Runs(Run_Index).Regions(Region_Index).Outputs.Silicate = Data(13,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate = Data(14,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Silicate_Weathering_Fraction = Data(15,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Weathering_Fraction = Data(16,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Radiation = Data(17,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Ice = Data(18,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Sea_Level = Data(19,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Snow_Line = Data(20,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Silicate_Weathering_Fraction = Data(14,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Weathering_Fraction = Data(15,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Radiation = Data(16,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Ice = Data(17,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Sea_Level = Data(18,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Snow_Line = Data(19,:);
             
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Lysocline = Data(21,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Seafloor_Total = Data(22,:);
-            if size(Data,1)>22;
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Lysocline = Data(20,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Seafloor_Total = Data(21,:);
+            if size(Data,1)>21;
                 self.Runs(Run_Index).Regions(Region_Index).Outputs.Cores = Data(23:end,:);
             end
         end
