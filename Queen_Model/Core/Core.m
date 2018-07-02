@@ -50,15 +50,15 @@ else
     Edge_Box_Fill = rem(y(18)+5,10)/10;
 end
 
-OceanArray = double(Model.Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(y(18)));
+OceanArray = double(Model.Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(y(17)));
 OceanArray(1001-round(y(18)/10)) = Edge_Box_Fill;
 
-SurfArray =  double(OceanArray & Model.Conditions.Presents.Architecture.Hypsometric_Bin_Midpoints>(round(y(18))-Model.Conditions.Presents.Architecture.Ocean_Depths(1)));
-SurfArray(1001-round(y(18)/10)) = Edge_Box_Fill;
-SurfArray(1001-(round(y(18)/10))+(Model.Conditions.Presents.Architecture.Ocean_Depths(1)/10)) = 1-Edge_Box_Fill;
+SurfArray =  double(OceanArray & Model.Conditions.Presents.Architecture.Hypsometric_Bin_Midpoints>(round(y(17))-Model.Conditions.Presents.Architecture.Ocean_Depths(1)));
+SurfArray(1001-round(y(17)/10)) = Edge_Box_Fill;
+SurfArray(1001-(round(y(17)/10))+(Model.Conditions.Presents.Architecture.Ocean_Depths(1)/10)) = 1-Edge_Box_Fill;
 
 DeepArray = double((Model.Conditions.Presents.Architecture.Hypsometric_Bin_Midpoints>(-Model.Conditions.Presents.Carbonate_Chemistry.Lysocline)) & OceanArray & ~SurfArray);
-DeepArray(1001-(round(y(18)/10))+(Model.Conditions.Presents.Architecture.Ocean_Depths(1)/10)) = Edge_Box_Fill;
+DeepArray(1001-(round(y(17)/10))+(Model.Conditions.Presents.Architecture.Ocean_Depths(1)/10)) = Edge_Box_Fill;
 DeepArray(1001+round(Model.Conditions.Presents.Carbonate_Chemistry.Lysocline/10)) = rem(Model.Conditions.Presents.Carbonate_Chemistry.Lysocline+5,10)/10;
 
 %% Weathering
