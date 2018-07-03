@@ -131,6 +131,19 @@ function DataOut = MySolver_15_Implicit_Trial(ODE,Run,Chunk_Number);
             end
             ST_out(:,1) = sum(y0_Sub);
             P_out(:,1) = Run.Regions(1).Conditions.Presents.Carbon.PIC_Burial;
+            
+            if yt_Out(18,Place)<-5;
+                Edge_Box_Fill = 1+rem(yt_Out(18,Place)+5,10)/10;
+            else
+                Edge_Box_Fill = rem(yt_Out(18,Place)+5,10)/10;
+            end
+            
+            OceanArray = double(Run.Regions(1).Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(yt_Out(17,Place)));
+            OceanArray(1001-round(yt_Out(18,Place)/10)) = Edge_Box_Fill;
+            
+            % Carbonate_Weathering = (1-OceanArray).*(y_2_Sub.*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure).*y(14).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Weatherability;
+            ST_out(2,Place) = sum((1-OceanArray).*(y_1_Sub));
+            
             Place = 2;
         end
         
@@ -161,6 +174,18 @@ function DataOut = MySolver_15_Implicit_Trial(ODE,Run,Chunk_Number);
                     end
                     ST_out(1,Place) = sum(y_2_Sub);
                     P_out(:,Place) = Run.Regions(1).Conditions.Presents.Carbon.PIC_Burial;
+                    
+                    if yt_Out(18,Place)<-5;
+                        Edge_Box_Fill = 1+rem(yt_Out(18,Place)+5,10)/10;
+                    else
+                        Edge_Box_Fill = rem(yt_Out(18,Place)+5,10)/10;
+                    end
+                    
+                    OceanArray = double(Run.Regions(1).Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(yt_Out(17,Place)));
+                    OceanArray(1001-round(yt_Out(18,Place)/10)) = Edge_Box_Fill;
+                    
+%                     Carbonate_Weathering = (1-OceanArray).*(y_2_Sub.*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure).*y(14).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Weatherability;
+                    ST_out(2,Place) = sum((1-OceanArray).*(y_2_Sub));
                     
                     if ~Transients_EmptyFlag;
                         for Parameter_Number = 1:size(Run.Regions(1).Conditions.Transients.Matrix,1);

@@ -936,8 +936,9 @@ classdef GECCO < handle
             self.Runs(Run_Index).Regions(Region_Index).Outputs.Snow_Line = Data(19,:);
             
             self.Runs(Run_Index).Regions(Region_Index).Outputs.Lysocline = Data(20,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Seafloor_Total = Data(21,:);
-            if size(Data,1)>21;
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Total = Data(21,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Exposed = Data(22,:);
+            if size(Data,1)>22;
                 self.Runs(Run_Index).Regions(Region_Index).Outputs.Cores = Data(23:end,:);
             end
         end

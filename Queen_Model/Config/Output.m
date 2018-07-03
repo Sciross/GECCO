@@ -9,7 +9,6 @@ classdef Output < matlab.mixin.Copyable & ParameterLoad
         Atmosphere_Temperature
         Ocean_Temperature
         Silicate
-        Carbonate
         Silicate_Weathering_Fraction
         Carbonate_Weathering_Fraction
         Radiation
@@ -19,7 +18,8 @@ classdef Output < matlab.mixin.Copyable & ParameterLoad
         Seafloor
         Outgassing
         Lysocline
-        Seafloor_Total
+        Carbonate_Total
+        Carbonate_Exposed
         Cores
     end
     properties (Hidden=true)
@@ -27,7 +27,7 @@ classdef Output < matlab.mixin.Copyable & ParameterLoad
     end
     methods
         function self = Output();
-            Sizes = [1,1,2,1,2,2,1,2,1,1,1,1,1,1,1,1,NaN,NaN,1,NaN,1];
+            Sizes = [1,1,2,1,2,2,1,2,1,1,1,1,1,1,1,NaN,NaN,1,1,1,NaN];
             self.Data_Size_Map = containers.Map(properties(self),Sizes);
         end
         function StartSave(self,Filename,DimensionSizes,DimensionMap);

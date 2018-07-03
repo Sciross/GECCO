@@ -224,17 +224,17 @@ classdef Condition < matlab.mixin.Copyable
 %             [self.Presents.CCKs,self.Presents.CCK_Depth_Correction] = GetCCKs(self.Constants.Salinity,self.Initials.Ocean_Temperature,self.Constants.Pressure,self.Constants.Pressure_Correction,Coefficients);
             
             % pH
-%             self.Presents.Carbonate_Chemistry.Solve([],1);
-            [self.Presents.Carbonate_Chemistry.pH,self.Presents.Carbonate_Chemistry.CO2,~,~,self.Presents.Carbonate_Chemistry.Saturation_State_C,~] = self.Presents.Carbonate_Chemistry.Solver_Handle(self.Presents.Carbonate_Chemistry.DIC,self.Presents.Carbonate_Chemistry.Alkalinity,{self.Presents.Carbonate_Chemistry.Boron,self.Presents.Carbonate_Chemistry.Silica,NaN,self.Presents.Carbonate_Chemistry.Calcium,self.Presents.Carbonate_Chemistry.Phosphate},(10.^(-[8;8]))*1000,self.Presents.Carbonate_Chemistry.CCKs,1,self.Presents.Carbonate_Chemistry.Tolerance);
+            self.Presents.Carbonate_Chemistry.Solve([],1);
+%             [self.Presents.Carbonate_Chemistry.pH,self.Presents.Carbonate_Chemistry.CO2,~,~,self.Presents.Carbonate_Chemistry.Saturation_State_C,~] = self.Presents.Carbonate_Chemistry.Solver_Handle(self.Presents.Carbonate_Chemistry.DIC,self.Presents.Carbonate_Chemistry.Alkalinity,{self.Presents.Carbonate_Chemistry.Boron,self.Presents.Carbonate_Chemistry.Silica,NaN,self.Presents.Carbonate_Chemistry.Calcium,self.Presents.Carbonate_Chemistry.Phosphate},(10.^(-[8;8]))*1000,self.Presents.Carbonate_Chemistry.CCKs,1,self.Presents.Carbonate_Chemistry.Tolerance);
             
             self.Presents.Carbonate_Chemistry.pH = self.Presents.Carbonate_Chemistry.pH;
             self.Presents.Carbonate_Chemistry.HIn = (10.^(-self.Presents.Carbonate_Chemistry.pH))*1000;
 %             self.Presents.Carbonate_Chemistry.Lysocline = self.Presents.Carbonate_Chemistry.Lysocline;
 
             % Lysocline
-%             self.Presents.Carbonate_Chemistry.Solve_Lysocline([],1);
+            self.Presents.Carbonate_Chemistry.Solve_Lysocline([],1);
 %             self.Presents.Carbonate_Chemistry.Lysocline = Lysocline_Solver_RegulaFalsi(self.Initials.DIC(2),self.Presents.Architectures.Midpoints,self.Initials.Ocean_Temperature,self.Presents.Salinity,self.Presents.Carbonate_Chemistry.pH,self.Presents.Carbonate_Chemistry.Calcium,[0;10000],1e-6,1);
-            self.Presents.Carbonate_Chemistry.Lysocline = self.Presents.Carbonate_Chemistry.Lysocline_Solver_Handle(self.Presents.Carbonate_Chemistry.DIC(2),self.Presents.Carbonate_Chemistry.Depths,self.Presents.Carbonate_Chemistry.Temperature,self.Presents.Carbonate_Chemistry.Salinity,self.Presents.Carbonate_Chemistry.pH,self.Presents.Carbonate_Chemistry.Calcium,self.Presents.Carbonate_Chemistry.Coefficients,[0,10000],1,self.Presents.Carbonate_Chemistry.Lysocline_Tolerance);
+%             self.Presents.Carbonate_Chemistry.Lysocline = self.Presents.Carbonate_Chemistry.Lysocline_Solver_Handle(self.Presents.Carbonate_Chemistry.DIC(2),self.Presents.Carbonate_Chemistry.Depths,self.Presents.Carbonate_Chemistry.Temperature,self.Presents.Carbonate_Chemistry.Salinity,self.Presents.Carbonate_Chemistry.pH,self.Presents.Carbonate_Chemistry.Calcium,self.Presents.Carbonate_Chemistry.Coefficients,[0,10000],1,self.Presents.Carbonate_Chemistry.Lysocline_Tolerance);
             self.Presents.Carbonate_Chemistry.Lysocline_In = self.Presents.Carbonate_Chemistry.Lysocline;
             
         end
