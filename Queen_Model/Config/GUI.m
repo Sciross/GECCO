@@ -1794,7 +1794,7 @@ classdef GUI < handle;
                 ylabel({'Outgassing','(mol)'});
                 
                 subplot(self.s{4});
-                p{4} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Seafloor_Total);
+                p{4} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Carbonate_Total);
                 ylabel({'Seafloor Total','(mol)'});
             end
         end

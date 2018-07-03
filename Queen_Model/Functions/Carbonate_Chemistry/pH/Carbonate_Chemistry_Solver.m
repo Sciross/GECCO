@@ -76,7 +76,7 @@ if ~Iteration_Flag;
     % Use derivable quadratic
     gamma = DIC./AlkalinityC;
     HOut = (0.5.*((gamma-1).*CCK1 + sqrt( (((1-gamma).^2).*(CCK1.^2)) - (4.*CCK1.*CCK2.*(1-(2*gamma))) )));
-    pH = -log10(HOut/1000);
+    pH = H2pH(HOut);
     
     % Calculate individual components ## NECESSARY?
     CO2 = DIC./(1+ CCK1./HOut + (CCK2.*CCK1)./(HOut.^2));
@@ -116,7 +116,7 @@ elseif Iteration_Flag;
         % Use derivable quadratic
         gamma = DIC./AlkalinityC;
         HOut = (0.5.*((gamma-1).*CCK1 + sqrt( (((1-gamma).^2).*(CCK1.^2)) - (4.*CCK1.*CCK2.*(1-(2*gamma))) )));
-        pH = -log10(HOut/1000);
+        pH = H2pH(HOut);
         
         % Calculate individual components ## NECESSARY?
         CO2 = DIC./(1+ CCK1./HOut + (CCK2.*CCK1)./(HOut.^2));
@@ -129,7 +129,7 @@ elseif Iteration_Flag;
         Omega = (Calcium.*CO3)./(Ksp);
         
         %% Anomaly
-        Anomaly = abs(pH+log10(HIn/1000));
+        Anomaly = abs(pH+H2pH(HIn));
         HIn = HOut;
     end
 end

@@ -28,7 +28,7 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
         ksp_arag_Matrix
         ks_Matrix
         
-        HIn
+        H_In
         DIC
         Alkalinity
         pH
@@ -120,13 +120,14 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
             end
             self.Lysocline = Lysocline_Solver_Regula_Falsi(self.DIC(2),self.Depths,self.Temperature,self.Salinity,self.pH,self.Calcium,self.Coefficients,Initial_Lysocline,Iteration_Flag,Tolerance);
         end
-        function AssignValues(self,varargin);
-            Params = varargin(1:2:end);
-            ChangeTo = varargin(2:2:end);
-            for ValueIndex = 1:numel(Params);
-                self.(Params{ValueIndex}) = ChangeTo{ValueIndex};
-            end
-        end
+%         function AssignValues(self,varargin);
+%             Params = varargin(1:2:end);
+%             ChangeTo = varargin(2:2:end);
+%             for ValueIndex = 1:numel(Params);
+%                 self.(Params{ValueIndex}) = ChangeTo{ValueIndex};
+%             end
+%         end
+        
         
         function Available_Solvers = GetAvailableSolvers(self,src,event);
             % Looks for directory contents matching pattern
