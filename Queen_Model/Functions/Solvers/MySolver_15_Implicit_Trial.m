@@ -142,7 +142,7 @@ function DataOut = MySolver_15_Implicit_Trial(ODE,Run,Chunk_Number);
             OceanArray(1001-round(yt_Out(18,Place)/10)) = Edge_Box_Fill;
             
             % Carbonate_Weathering = (1-OceanArray).*(y_2_Sub.*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure).*y(14).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Weatherability;
-            ST_out(2,Place) = sum((1-OceanArray).*(y_1_Sub));
+            ST_out(2,Place) = sum((1-OceanArray).*(y_1_Sub).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure);
             
             Place = 2;
         end
@@ -185,7 +185,7 @@ function DataOut = MySolver_15_Implicit_Trial(ODE,Run,Chunk_Number);
                     OceanArray(1001-round(yt_Out(18,Place)/10)) = Edge_Box_Fill;
                     
 %                     Carbonate_Weathering = (1-OceanArray).*(y_2_Sub.*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure).*y(14).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Weatherability;
-                    ST_out(2,Place) = sum((1-OceanArray).*(y_2_Sub));
+                    ST_out(2,Place) = sum((1-OceanArray).*(y_2_Sub).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure);
                     
                     if ~Transients_EmptyFlag;
                         for Parameter_Number = 1:size(Run.Regions(1).Conditions.Transients.Matrix,1);

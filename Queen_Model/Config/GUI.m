@@ -1739,7 +1739,8 @@ classdef GUI < handle;
                 hold off
                 subplot(self.s{5});
                 Silicate_Weathering = Silicate_Weathering_Fraction.*self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Silicate.*self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Conditions.Constants.Weathering.Silicate_Weatherability;
-                Carbonate_Weathering = Carbonate_Weathering_Fraction.*self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Carbonate.*self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Conditions.Constants.Weathering.Carbonate_Weatherability;
+%                 Carbonate_Weathering = Carbonate_Weathering_Fraction.*self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Carbonate.*self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Conditions.Constants.Weathering.Carbonate_Weatherability;
+                Carbonate_Weathering = self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Carbonate_Exposed.*Carbonate_Weathering_Fraction.*self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Conditions.Presents.Weathering.Carbonate_Weatherability;
                 
                 Rivers = (2*(Silicate_Weathering+Carbonate_Weathering))/self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Conditions.Constants.Architecture.Riverine_Volume;
                 p{5} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,Rivers);

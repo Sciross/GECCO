@@ -51,7 +51,7 @@ else
 end
 
 OceanArray = double(Model.Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(y(17)));
-OceanArray(1001-round(y(18)/10)) = Edge_Box_Fill;
+OceanArray(1001-round(y(17)/10)) = Edge_Box_Fill;
 
 SurfArray =  double(OceanArray & Model.Conditions.Presents.Architecture.Hypsometric_Bin_Midpoints>(round(y(17))-Model.Conditions.Presents.Architecture.Ocean_Depths(1)));
 SurfArray(1001-round(y(17)/10)) = Edge_Box_Fill;
