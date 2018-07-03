@@ -20,7 +20,10 @@ classdef Functional < matlab.mixin.Copyable
             
             self.SetAvailableSolvers();
             % Set default solver
-            self = self.SetSolver('MySolver_15_Implicit_Trial');
+            self = self.SetSolver('Heun_Unoptimised');
+            if isempty(self.Solver) || strcmp(self.Solver,"");
+                self = self.SetSolver(self.AvailableSolvers{1});
+            end
         end
          %% Gets available cores
         function AvailableCores = GetAvailableCores(self,src,event);
@@ -62,6 +65,8 @@ classdef Functional < matlab.mixin.Copyable
             end
             if any(self.AvailableSolvers==Solver);
                 self.Solver = Solver;
+            else
+                warning("Solver not set correctly");
             end            
         end
         

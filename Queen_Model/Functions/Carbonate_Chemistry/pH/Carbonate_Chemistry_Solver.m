@@ -129,7 +129,7 @@ elseif Iteration_Flag;
         Omega = (Calcium.*CO3)./(Ksp);
         
         %% Anomaly
-        Anomaly = abs(pH+H2pH(HIn));
+        Anomaly = abs(pH-H2pH(HIn));
         HIn = HOut;
     end
 end
