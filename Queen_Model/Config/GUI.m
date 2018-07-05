@@ -1777,7 +1777,7 @@ classdef GUI < handle;
                 xlim([0,max(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time)]);
             elseif self.SubplotIndex==4;
                 subplot(self.s{1});
-                p{1} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Lysocline,'Color',self.Colours.blue);
+                p{1} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Lysocline+self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Sea_Level,'Color',self.Colours.blue);
                 ylabel({'Lysocline','(m)'});
                 set(gca,'YDir','Reverse');
                 xlim([min(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time),max(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time)]);

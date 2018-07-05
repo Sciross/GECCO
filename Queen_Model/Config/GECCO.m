@@ -719,6 +719,7 @@ classdef GECCO < handle
                 profile on;
                 if self.UsedGUIFlag;
                     Gui.ColourBox.BackgroundColor = [1,1,0.5];
+                    Gui.UpdateLogBox("Starting model runs...");
                     drawnow;
                 end
                 
@@ -735,11 +736,6 @@ classdef GECCO < handle
                     end
                 end
                 
-                DateTime(1) = datetime('now');
-                if self.UsedGUIFlag;
-                    Gui.UpdateLogBox(strcat("Starting..."," @ ",string(datetime('now','Format','HH:mm:ss'))));
-                end
-                
                 if self.ShouldSaveFlag;
                     self.MakeDimensionMap();
                     if self.SaveToSameFileFlag();
@@ -754,7 +750,12 @@ classdef GECCO < handle
                 
 %                 try
                 % Loop for runs
-                for Run_Index = 1:numel(self.Runs);           
+                for Run_Index = 1:numel(self.Runs);
+                    DateTime(1) = datetime('now');
+                    if self.UsedGUIFlag;
+                        Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," starting "," @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
+                    end
+                
                     % Start Save
                     if self.ShouldSaveFlag && self.SaveToRunFilesFlag;
                         self.Runs(Run_Index).Outputs.StartSave(self.OutputFile,self.GetDimensionSizes(),self.DimensionMap);
@@ -802,7 +803,7 @@ classdef GECCO < handle
                     
                     if self.UsedGUIFlag;
                         % Display when run is complete
-                        Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," complete @ ",string(datetime('now','Format','HH:mm:ss'))));
+                        Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," complete @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
                     end
                     
                     % Save data to one file when each run is done
@@ -829,7 +830,7 @@ classdef GECCO < handle
                   
                 % Print to log box
                 if self.UsedGUIFlag;
-                    Gui.UpdateLogBox("Successfully completed");
+                    Gui.UpdateLogBox("Successfully completed model runs!");
                     Gui.ColourBox.BackgroundColor = [0,0.5,0.3];
                 end
 
