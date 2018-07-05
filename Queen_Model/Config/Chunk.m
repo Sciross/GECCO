@@ -1,17 +1,17 @@
 classdef Chunk < handle
     properties
-        TimeIn
-        TimeOut
+        Time_In
+        Time_Out
         Perturbations
     end
     methods
-        function self = Chunk(TimeIn,TimeOut);
+        function self = Chunk(Time_In,Time_Out);
             if nargin>1;
-                self.TimeIn = TimeIn;
-                self.TimeOut = TimeOut;
+                self.Time_In = Time_In;
+                self.Time_Out = Time_Out;
             else
-                self.TimeIn = [0,1e6,20];
-                self.TimeOut = [0,1e6,100];
+                self.Time_In = [0,1e6,20];
+                self.Time_Out = [0,1e6,100];
             end
         end
         function AddPerturbation(self,PerturbWhat,Number,WhatTo);

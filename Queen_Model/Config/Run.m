@@ -143,7 +143,7 @@ classdef Run < handle
         end
         
         %% Load
-        function Load(self,Filename);            
+        function Load(self,Filename);
             FileID = netcdf.open(Filename,'NOWRITE');
             RepGrpID = netcdf.inqNcid(FileID,'Replication');
             VarID = netcdf.inqVarID(RepGrpID,'Run_Matrix');
@@ -165,5 +165,6 @@ classdef Run < handle
             for Run_Index = 1:numel(self);
             end
         end
+        
     end
 end

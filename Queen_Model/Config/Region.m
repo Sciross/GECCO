@@ -2,6 +2,7 @@ classdef Region < matlab.mixin.Copyable
     properties
         Conditions@Condition
         Outputs@Output
+        Information@Information
         
         Total_Steps
         Current_Step

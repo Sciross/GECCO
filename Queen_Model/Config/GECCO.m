@@ -15,6 +15,7 @@ classdef GECCO < handle
         ShouldSaveFlag = 1;
         SaveToSameFileFlag = 1;
         SaveToRunFilesFlag = 0;
+        SaveToRegionFilesFlag = 0;
     end
     methods(Static)
         function Flag = CheckFileExists(Filepath);
@@ -697,8 +698,6 @@ classdef GECCO < handle
             self.ValidatedFlag = self.ValidatedFlag && all(RunsValidatedFlags);
             
             if self.ValidatedFlag;
-                self.Runs.Regions.Conditions.Constants.Carbonate_Chemistry.SolverToHandle();
-                self.Runs.Regions.Conditions.Constants.Carbonate_Chemistry.LysoclineSolverToHandle();
                 profile on;
                 if self.UsedGUIFlag;
                     Gui.ColourBox.BackgroundColor = [1,1,0.5];
@@ -707,9 +706,15 @@ classdef GECCO < handle
                 
                 self.DeleteExistingFile();
                 for Run_Index = 1:numel(self.Runs);
+                    self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.SolverToHandle();
+                    self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.LysoclineSolverToHandle();
                     self.Runs(Run_Index).Regions(1).Outputs = Output();
                     self.Runs(Run_Index).Regions(1).Conditions.UpdatePresent();
                     self.Runs(Run_Index).Regions(1).Conditions.CalculateDependents(self.Runs(end).Chunks(end).TimeIn(2));
+                    self.Runs(Run_Index).Regions(1).Information = self.Runs(Run_Index).Information();
+                    if self.SaveToRegionFilesFlag;
+                        self.Runs(Run_Index).Regions(1).Information.Output_File = strcat(self.Runs(Run_Index).Regions(1).Information.Output_File,"_Region_",numstr(1));
+                    end
                 end
                 
                 DateTime(1) = datetime('now');
@@ -787,7 +792,12 @@ classdef GECCO < handle
                             self.Runs(Run_Index).Regions(1).Save(self.Information,1,Run_Index);
                         end
                         if self.SaveToRunFilesFlag;
-                            self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information.OutputFile);
+                            self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information,1,Run_Index);
+                        end
+                        if self.SaveToRegionFilesFlag;
+                            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                                self.Runs(Run_Index).Regions(Region_Index).Save(self.Runs(Run_Index).Regions(Region_Index).Information,Region_Index,Run_Index);
+                            end
                         end
                     end
                                         

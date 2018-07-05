@@ -67,6 +67,7 @@ classdef GUI < handle;
         SplashInputFileUI
         SplashFilenameWarningUI
         SplashSaveByRunsTickboxUI
+        SplashSaveByRegionsTickboxUI
         SplashSaveToSameFileTickboxUI
         SplashShouldSaveTickboxUI
         % Flags
@@ -115,12 +116,13 @@ classdef GUI < handle;
             
             %% Tabbing
             self.TabGroupHandle = uitabgroup('Parent',self.Handle,...
-                                             'SelectionChangedFcn',@self.TabChangeCallback);
+                                             'SelectionChangedFcn',@self.TabChangeCallback,...
+                                             'Tag','TabChange');
             self.SplashTabHandle = uitab('Parent',self.TabGroupHandle,'Title','Splash');
             self.RunTabHandles = {uitab('Parent',self.TabGroupHandle,'Title','Run 1'),uitab('Parent',self.TabGroupHandle,'Title','+')};
             self.PlotTabHandle = uitab('Parent',self.TabGroupHandle,'Title','Plot Data');
 
-            self.RunTableUI.Data = self.BuildRunTable;
+            self.RunTableUI.Data = self.BuildChunkTable();
 %             self.ConstTableUI.Data = [];
                 
             self.TabChangeCallback();
@@ -396,34 +398,30 @@ classdef GUI < handle;
         end
         
         %% Run Table Callbacks
-        % Store currently selected run
-        function UpdateCurrentRun(self,src,event);
-            if ~isempty(event.Indices);
-%                 self.SelectedRun = src.Data(event.Indices(1),1);
-            end
-        end
-        % Store currently selected chunk
         function UpdateCurrentChunk(self,src,event);
+        % Store currently selected chunk
             if ~isempty(event.Indices);
                 self.SelectedChunk = event.Indices(1);
             end
         end 
-        % Store currently selected indices
         function UpdateRunIndices(self,src,event);
+        % Store currently selected indices
             self.UpdateCurrentRun(src,event);
             self.UpdateCurrentChunk(src,event);
             self.RunIndices = event.Indices;
         end
-        % Add a run
         function AddRunCallback(self,src,event);
-            self.Gecco.AddRun;
+        % Add a run
+            self.Gecco.AddRun();
             self.LogMessages = [self.LogMessages,cell(1)];
+            self.PertMatrix = [self.PertMatrix,cell(0,7)];
+            self.TransMatrix = [self.TransMatrix,cell(0,5)];
             if nargin==3
                 self.RebuildTable(src,event);
             end
         end
-        % Add a chunk
         function AddChunkCallback(self,src,event);
+            % Add a chunk
             % Call the inherent method
             self.Gecco.Runs(self.SelectedRun).AddChunk();
             % Rebuild the table
@@ -431,8 +429,11 @@ classdef GUI < handle;
         end
         function RebuildTable(self,src,event);
             % Then build the table from scratch
-                self.RunTableUI.Data = self.BuildRunTable();
+%                 self.RunTableUI.Data = self.BuildRunTable();
+                self.RunTableUI.Data = self.BuildChunkTable();
                 self.UpdatePertTransTable(src,event);
+%                 if ~strcmp(src.Tag,"TabChange");
+%                 end
                 % Update the perturbation table data
 %                 self.UpdatePertTableDefinition(src,event);
                 % Update the variable table data
@@ -449,25 +450,14 @@ classdef GUI < handle;
 %                 self.UpdateConstSelector();
 %                 self.ConstSelectorUI.String = self.GetOrderedConstNames();
         end
-        % Build a run table
-        function Run_Table = BuildRunTable(self,src,event);
-            % Go through each entry and store relevant info.
-            if numel(self.Gecco.Runs)==0;
-                Run_Table = [];
-            else
-                Count = 1;
-                for Run_Index = 1:numel(self.Gecco.Runs);
-                    ChunkNumber = numel(self.Gecco.Runs(Run_Index).Chunks);
-                    for ChunkIndex = 1:ChunkNumber;
-                        Run_Table(Count,1:3) = self.Gecco.Runs(Run_Index).Chunks(ChunkIndex).TimeIn;
-                        Run_Table(Count,4:6) = self.Gecco.Runs(Run_Index).Chunks(ChunkIndex).TimeOut;
-                        Count = Count+1;
-                    end
-                end
+        function Chunk_Table = BuildChunkTable(self,src,event);
+            for Chunk_Index = 1:numel(self.Gecco.Runs(self.SelectedRun).Chunks);;
+                Chunk_Table(Chunk_Index,1:3) = self.Gecco.Runs(self.SelectedRun).Chunks(Chunk_Index).Time_In;
+                Chunk_Table(Chunk_Index,4:6) = self.Gecco.Runs(self.SelectedRun).Chunks(Chunk_Index).Time_Out;
             end
         end
-        % Remove an entry from the run table
         function RunTableRemoveEntry(self,src,event);
+        % Remove an entry from the run table
             % If something is selected
             if ~isempty(self.RunIndices);
                 % Remove from GECCO
@@ -487,8 +477,8 @@ classdef GUI < handle;
             end
         end
         function RunTableEditCallback(self,src,event);
-            self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk).TimeIn = event.Source.Data(event.Indices(1),1:3);
-            self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk).TimeOut = event.Source.Data(event.Indices(1),4:6);
+            self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk).Time_In = event.Source.Data(event.Indices(1),1:3);
+            self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk).Time_Out = event.Source.Data(event.Indices(1),4:6);
         end
         function LoadRuns(self,src,event);
             if isempty(self.SplashInputFileUI.String) || strcmp(self.SplashInputFileUI.String,"Input File");
@@ -817,7 +807,7 @@ classdef GUI < handle;
                 self.PertTransTableUI.CellSelectionCallback = @self.UpdateSelectedPert;
                 self.PertTransTableUI.ColumnWidth = {50,40,60,60,110,40,180};
                 
-                if ~isempty(self.PertMatrix);
+                if ~isempty(self.PertMatrix) && size(self.PertMatrix{1},1)>0;
                     self.PertTransTableUI.Data = self.PertMatrix{self.SelectedRun};
                 end
             else
@@ -833,17 +823,19 @@ classdef GUI < handle;
                 self.PertTransTableUI.CellSelectionCallback = @self.UpdateSelectedTransient;
                 self.PertTransTableUI.ColumnWidth = {40,40,70,100,40,200};
                 
-                if ~isempty(self.TransMatrix);
+                if ~isempty(self.TransMatrix) && size(self.PertMatrix{1},1)>0;
                     self.PertTransTableUI.Data = self.TransMatrix{self.SelectedRun};
-                end                
+                end
             end
         end
         function UpdatePertTransTable(self,src,event);
-            if strcmp(self.ChangeSelectorUI.String{self.ChangeSelectorUI.Value},'Perturbations');
-                self.UpdatePerturbationTable(src,event);
-            else
-                self.UpdateTransientTable(src,event);
-            end             
+            if ~isempty(self.ChangeSelectorUI);
+                if strcmp(self.ChangeSelectorUI.String{self.ChangeSelectorUI.Value},'Perturbations');
+                    self.UpdatePerturbationTable(src,event);
+                else
+                    self.UpdateTransientTable(src,event);
+                end
+            end
         end
         function AddChange(self,src,event);
             if strcmp(self.ChangeSelectorUI.String{self.ChangeSelectorUI.Value},'Perturbations');
@@ -903,7 +895,7 @@ classdef GUI < handle;
         % Updates the perturbation table display
             % If the caller is from adding a new Chunk
             if strcmp(src.Tag,'ChangeSelector');
-            elseif strcmp(src.Tag,'AddChangeButton');
+            elseif strcmp(src.Tag,'AddChangeButton') || isempty(src.Tag);
                 self.PertTransTableUI.Data = self.PertMatrix{self.SelectedRun};
             elseif strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton');
                 ChunkStrings = num2str(1:numel(self.Gecco.Runs(self.SelectedRun).Chunks));
@@ -1265,6 +1257,7 @@ classdef GUI < handle;
             elseif ~strcmp(event.NewValue.Title,'Plot Data');
                 self.SelectedTab = str2double(event.NewValue.Title(end));
                 self.SelectedRun = self.SelectedTab;
+                self.RebuildTable(src,event);
                 self.DrawSettings();
             elseif strcmp(event.NewValue.Title,'Plot Data');
                 if ~isempty(self.Gecco);
@@ -1277,7 +1270,7 @@ classdef GUI < handle;
         end
         function DrawSplashPage(self);
             Ax = axes('Parent',self.SplashTabHandle,'Position',[0.05,0.22,0.9,0.75]);
-            imshow(self.Logo,'InitialMagnification',16,'Parent',Ax);
+            imshow(self.Logo,'InitialMagnification',12,'Parent',Ax);
             %% Filepath                                       
                 self.SplashInputFileUI = uicontrol('Style','edit',...
                                                    'Tag',"SplashInputFile",...
@@ -1325,7 +1318,7 @@ classdef GUI < handle;
                                                                'Tag',"SaveToSameFileTickbox",...
                                                                'Value',self.Gecco.SaveToSameFileFlag,...
                                                                'Units','Normalized',...
-                                                               'Position',self.SplashShouldSaveTickboxUI.Position+[0.2,0,0,0],...
+                                                               'Position',self.SplashShouldSaveTickboxUI.Position+[0.16,0,0,0],...
                                                                'HorizontalAlignment','Left',...
                                                                'String',"Save To Same File",...
                                                                'Callback',@self.SetSaveFlag,...
@@ -1334,11 +1327,20 @@ classdef GUI < handle;
                                                            'Tag',"SaveByRunsTickbox",...
                                                            'Value',self.Gecco.SaveToRunFilesFlag,...
                                                            'Units','Normalized',...
-                                                           'Position',self.SplashSaveToSameFileTickboxUI.Position+[0.2,0,0,0],...
+                                                           'Position',self.SplashSaveToSameFileTickboxUI.Position+[0.16,0,0,0],...
                                                            'HorizontalAlignment','Left',...
                                                            'String',"Save Each Run To Same File",...
                                                            'Callback',@self.SetSaveFlag,...
                                                            'Parent',self.SplashTabHandle);
+                self.SplashSaveByRegionsTickboxUI = uicontrol('Style','Checkbox',...
+                                                              'Tag',"SaveByRunsTickbox",...
+                                                              'Value',self.Gecco.SaveToRegionFilesFlag,...
+                                                              'Units','Normalized',...
+                                                              'Position',self.SplashSaveByRunsTickboxUI.Position+[0.16,0,0,0],...
+                                                              'HorizontalAlignment','Left',...
+                                                              'String',"Save Each Region To Same File",...
+                                                              'Callback',@self.SetSaveFlag,...
+                                                              'Parent',self.SplashTabHandle);
                                                      
                 SplashInputFileBrowseButton = uicontrol('Style','Pushbutton',...
                                                         'Tag',"SplashInputFileBrowseButton",...
