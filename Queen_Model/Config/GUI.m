@@ -398,24 +398,12 @@ classdef GUI < handle;
         end
         
         %% Run Table Callbacks
-        function UpdateCurrentChunk(self,src,event);
-        % Store currently selected chunk
-            if ~isempty(event.Indices);
-                self.SelectedChunk = event.Indices(1);
-            end
-        end 
-        function UpdateRunIndices(self,src,event);
-        % Store currently selected indices
-            self.UpdateCurrentRun(src,event);
-            self.UpdateCurrentChunk(src,event);
-            self.RunIndices = event.Indices;
-        end
         function AddRunCallback(self,src,event);
         % Add a run
             self.Gecco.AddRun();
             self.LogMessages = [self.LogMessages,cell(1)];
-            self.PertMatrix = [self.PertMatrix,cell(0,7)];
-            self.TransMatrix = [self.TransMatrix,cell(0,5)];
+            self.PertMatrix{end+1} = cell(0,7);
+            self.TransMatrix{end+1} = cell(0,5);
             if nargin==3
                 self.RebuildTable(src,event);
             end
@@ -426,6 +414,41 @@ classdef GUI < handle;
             self.Gecco.Runs(self.SelectedRun).AddChunk();
             % Rebuild the table
             self.RebuildTable(src,event);
+        end
+        function RemoveChunkCallback(self,src,event);
+        % Remove an entry from the run table
+            % If something is selected
+            if ~isempty(self.ChunkIndices);
+                % Remove from GECCO
+                self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk) = [];                
+                % Rebuild the table
+                self.RebuildTable(src,event);
+            else
+                % Print to log
+                self.UpdateLogBox("Error removing run");         
+            end
+        end        
+        function ChunkTableEditCallback(self,src,event);
+            self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk).Time_In = event.Source.Data(event.Indices(1),1:3);
+            self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk).Time_Out = event.Source.Data(event.Indices(1),4:6);
+        end
+        
+        function UpdateCurrentChunk(self,src,event);
+        % Store currently selected chunk
+            if ~isempty(event.Indices);
+                self.SelectedChunk = event.Indices(1);
+            end
+        end 
+        function UpdateRunIndices(self,src,event);
+        % Store currently selected indices
+            self.UpdateCurrentChunk(src,event);
+            self.RunIndices = event.Indices;
+        end
+        function Chunk_Table = BuildChunkTable(self,src,event);
+            for Chunk_Index = 1:numel(self.Gecco.Runs(self.SelectedRun).Chunks);;
+                Chunk_Table(Chunk_Index,1:3) = self.Gecco.Runs(self.SelectedRun).Chunks(Chunk_Index).Time_In;
+                Chunk_Table(Chunk_Index,4:6) = self.Gecco.Runs(self.SelectedRun).Chunks(Chunk_Index).Time_Out;
+            end
         end
         function RebuildTable(self,src,event);
             % Then build the table from scratch
@@ -450,36 +473,7 @@ classdef GUI < handle;
 %                 self.UpdateConstSelector();
 %                 self.ConstSelectorUI.String = self.GetOrderedConstNames();
         end
-        function Chunk_Table = BuildChunkTable(self,src,event);
-            for Chunk_Index = 1:numel(self.Gecco.Runs(self.SelectedRun).Chunks);;
-                Chunk_Table(Chunk_Index,1:3) = self.Gecco.Runs(self.SelectedRun).Chunks(Chunk_Index).Time_In;
-                Chunk_Table(Chunk_Index,4:6) = self.Gecco.Runs(self.SelectedRun).Chunks(Chunk_Index).Time_Out;
-            end
-        end
-        function RunTableRemoveEntry(self,src,event);
-        % Remove an entry from the run table
-            % If something is selected
-            if ~isempty(self.RunIndices);
-                % Remove from GECCO
-                self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk) = [];
-                
-%                 for Run_Index = numel(self.Gecco.Runs):-1:1;
-%                     if numel(self.Gecco.Runs(Run_Index).Chunks)==0;
-%                         self.Gecco.Runs(Run_Index) = [];
-%                     end
-%                 end
-                
-                % Rebuild the table
-                self.RebuildTable(src,event);
-            else
-                % Print to log
-                self.UpdateLogBox("Error removing run");         
-            end
-        end
-        function RunTableEditCallback(self,src,event);
-            self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk).Time_In = event.Source.Data(event.Indices(1),1:3);
-            self.Gecco.Runs(self.SelectedRun).Chunks(self.SelectedChunk).Time_Out = event.Source.Data(event.Indices(1),4:6);
-        end
+        
         function LoadRuns(self,src,event);
             if isempty(self.SplashInputFileUI.String) || strcmp(self.SplashInputFileUI.String,"Input File");
                 self.GetAndSetFilepath(src,event);
@@ -895,7 +889,7 @@ classdef GUI < handle;
         % Updates the perturbation table display
             % If the caller is from adding a new Chunk
             if strcmp(src.Tag,'ChangeSelector');
-            elseif strcmp(src.Tag,'AddChangeButton') || isempty(src.Tag);
+            elseif strcmp(src.Tag,'AddChangeButton') || isempty(src.Tag) || strcmp(src.Tag,'TabChange');
                 self.PertTransTableUI.Data = self.PertMatrix{self.SelectedRun};
             elseif strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton');
                 ChunkStrings = num2str(1:numel(self.Gecco.Runs(self.SelectedRun).Chunks));
@@ -976,7 +970,7 @@ classdef GUI < handle;
                 self.UpdateLogBox("Unknown error in perturbation table update");
             end
             
-            if ~(strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton') || strcmp(src.Tag,'AddChangeButton'));
+            if ~(strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton') || strcmp(src.Tag,'AddChangeButton') || strcmp(src.Tag,'TabChange'));
                 self.PertMatrix{self.SelectedRun} = src.Data;
             end
         end
@@ -1457,7 +1451,7 @@ classdef GUI < handle;
                                           'Units','Normalized',...
                                           'Position',[RunTableLabelUI.Position(1)+0.08,RunTableLabelUI.Position(2)-0.12,self.BoxSize{1}(1),self.BoxSize{1}(2)],...
                                           'CellSelectionCallback',@self.UpdateRunIndices,...
-                                          'CellEditCallback',@self.RunTableEditCallback,...
+                                          'CellEditCallback',@self.ChunkTableEditCallback,...
                                           'ColumnName',{'Start','End','Step','Start','End','Step'},...
                                           'ColumnWidth',{60,60,40,60,60,40},...
                                           'ColumnEditable',[true,true,true,true,true,true,true],...

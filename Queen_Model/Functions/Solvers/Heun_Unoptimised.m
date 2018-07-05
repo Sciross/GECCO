@@ -1,13 +1,13 @@
 % My simple, Heun solver
 % Uses an average of the forward and backward gradients to project forward
 % in time
-function DataOut = Heun_Solver_Unoptimised(ODE,Run,Chunk_Number);
+function DataOut = Heun_Unoptimised(ODE,Run,Chunk_Number);
     % Time_Out yt_Out,V_out,L_out,S_out,ST_out,P_out
     
-    Time_In = Run.Chunks(Chunk_Number).TimeIn(1):Run.Chunks(Chunk_Number).TimeIn(3):Run.Chunks(Chunk_Number).TimeIn(2);
-    Time_Out = Run.Chunks(Chunk_Number).TimeOut(1):Run.Chunks(Chunk_Number).TimeOut(3):Run.Chunks(Chunk_Number).TimeOut(2);
-    Step_Size_In = Run.Chunks(1).TimeIn(3);
-    Step_Size_Out = Run.Chunks(1).TimeOut(3);
+    Time_In = Run.Chunks(Chunk_Number).Time_In(1):Run.Chunks(Chunk_Number).Time_In(3):Run.Chunks(Chunk_Number).Time_In(2);
+    Time_Out = Run.Chunks(Chunk_Number).Time_Out(1):Run.Chunks(Chunk_Number).Time_Out(3):Run.Chunks(Chunk_Number).Time_Out(2);
+    Step_Size_In = Run.Chunks(1).Time_In(3);
+    Step_Size_Out = Run.Chunks(1).Time_Out(3);
     Transients_EmptyFlag =  isempty(Run.Regions(1).Conditions.Transients.Matrix);
     
     y0 = Run.Regions(1).Conditions.Initials.Conditions;
@@ -147,9 +147,9 @@ function DataOut = Heun_Solver_Unoptimised(ODE,Run,Chunk_Number);
     end
     
     if ~isnan(S_out);
-        DataOut = {[Time_Out;yt_Out;L_out,ST_out,S_out],V_out,P_out};
+        DataOut = {yt_Out,[Time_Out;L_out;ST_out;S_out],V_out,P_out};
     else
-        DataOut = {[Time_Out;yt_Out;L_out;ST_out],V_out,P_out};
+        DataOut = {yt_Out,[Time_Out;L_out;ST_out],[],V_out,P_out};
     end
     Run.Regions(1).Outputs.Outgassing = y_2_Meta;
     Run.Regions(1).Outputs.Seafloor = y_2_Sub;

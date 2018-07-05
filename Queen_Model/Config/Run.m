@@ -110,7 +110,7 @@ classdef Run < handle
         end
         function Timesteps = GetOutputTimestepCount(self);
             for Chunk_Index = 1:numel(self.Chunks);
-                Timestep_Chunks(Chunk_Index) = numel(self.Chunks(Chunk_Index).TimeOut(1):self.Chunks(Chunk_Index).TimeOut(3):self.Chunks(Chunk_Index).TimeOut(2));
+                Timestep_Chunks(Chunk_Index) = numel(self.Chunks(Chunk_Index).Time_Out(1):self.Chunks(Chunk_Index).Time_Out(3):self.Chunks(Chunk_Index).Time_Out(2));
             end
             Timesteps = sum(Timestep_Chunks);
         end

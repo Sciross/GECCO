@@ -235,8 +235,8 @@ classdef GECCO < handle
             netcdf.close(FileID);
         end
         function DefineReplicationDimensions(Filename,Replication_Data);
-            Run_Stuff = Replication_Data{1};
-            Initial_Stuff = Replication_Data{2};
+            Run_Stuff = Replication_Data{1}{1};
+            Initial_Stuff = Replication_Data{1}{2};
             
             FileID = netcdf.open(Filename,'WRITE');
             netcdf.reDef(FileID);
@@ -264,16 +264,16 @@ classdef GECCO < handle
             RepGrpID = netcdf.inqNcid(FileID,'Replication');
             
             CurrentDims = {'c_1','c_2','r','R'};
-            netcdf.defVar(RepGrpID,'Run_Matrix','double',[netcdf.inqDimID(FileID,CurrentDims{1}),netcdf.inqDimID(FileID,CurrentDims{2})]);
+            netcdf.defVar(RepGrpID,'Run_Matrix','double',GECCO.DimToDimID(FileID,CurrentDims));
             
             CurrentDims = {'i_2','t_0','r','R'};
-            netcdf.defVar(RepGrpID,'Initial_Matrix','double',[netcdf.inqDimID(FileID,CurrentDims{1}),netcdf.inqDimID(FileID,CurrentDims{2})]);
+            netcdf.defVar(RepGrpID,'Initial_Matrix','double',GECCO.DimToDimID(FileID,CurrentDims));
             
             CurrentDims = {'s','t_0','r','R'};
-            netcdf.defVar(RepGrpID,'Initial_Seafloor','double',[netcdf.inqDimID(FileID,CurrentDims{1}),netcdf.inqDimID(FileID,CurrentDims{2})]);
+            netcdf.defVar(RepGrpID,'Initial_Seafloor','double',GECCO.DimToDimID(FileID,CurrentDims));
   
             CurrentDims = {'m','t_0','r','R'};
-            netcdf.defVar(RepGrpID,'Initial_Outgassing','double',[netcdf.inqDimID(FileID,CurrentDims{1}),netcdf.inqDimID(FileID,CurrentDims{2})]);
+            netcdf.defVar(RepGrpID,'Initial_Outgassing','double',GECCO.DimToDimID(FileID,CurrentDims));
 
             netcdf.endDef(FileID);
             netcdf.close(FileID);
@@ -282,19 +282,37 @@ classdef GECCO < handle
             FileID = netcdf.open(Filename,'WRITE');
             RepGrpID = netcdf.inqNcid(FileID,'Replication');
             
+
             Run_MatrixID = netcdf.inqVarID(RepGrpID,'Run_Matrix');
-            netcdf.putVar(RepGrpID,Run_MatrixID,Replication_Data{1});
+            for Run_Index = 1:numel(Replication_Data);            
+                % Specify start and stride
+                Region_Index = 1;
+                Start = [0,0,Region_Index-1,Run_Index-1];
+                Count = [1,numel(Replication_Data{Run_Index}{1}),1,1];
+                Stride = [1,1,1,1];
+                
+                netcdf.putVar(RepGrpID,Run_MatrixID,Start,Count,Stride,Replication_Data{Run_Index}{1});
             
-            Init_MatrixID = netcdf.inqVarID(RepGrpID,'Initial_Matrix');
-            netcdf.putVar(RepGrpID,Init_MatrixID,Replication_Data{2});
-            
-            Init_SeafloorID = netcdf.inqVarID(RepGrpID,'Initial_Seafloor');
-            Initial_Seafloor = Replication_Data{3};
-            netcdf.putVar(RepGrpID,Init_SeafloorID,Initial_Seafloor);
-            
-            Init_OutgassingID = netcdf.inqVarID(RepGrpID,'Initial_Outgassing');
-            Initial_Outgassing = Replication_Data{4};
-            netcdf.putVar(RepGrpID,Init_OutgassingID,Initial_Outgassing);
+                Start = [0,0,Region_Index-1,Run_Index-1];
+                Count = [numel(Replication_Data{Run_Index}{2}),1,1,1];
+                Stride = [1,1,1,1];
+                Init_MatrixID = netcdf.inqVarID(RepGrpID,'Initial_Matrix');
+                netcdf.putVar(RepGrpID,Init_MatrixID,Start,Count,Stride,Replication_Data{Run_Index}{2});
+                
+                Start = [0,0,Region_Index-1,Run_Index-1];
+                Count = [numel(Replication_Data{Run_Index}{3}),1,1,1];
+                Stride = [1,1,1,1];
+                Init_SeafloorID = netcdf.inqVarID(RepGrpID,'Initial_Seafloor');
+                Initial_Seafloor = Replication_Data{Run_Index}{3};
+                netcdf.putVar(RepGrpID,Init_SeafloorID,Start,Count,Stride,Initial_Seafloor);
+                
+                Start = [0,0,Region_Index-1,Run_Index-1];
+                Count = [numel(Replication_Data{Run_Index}{4}),1,1,1];
+                Stride = [1,1,1,1];
+                Init_OutgassingID = netcdf.inqVarID(RepGrpID,'Initial_Outgassing');
+                Initial_Outgassing = Replication_Data{Run_Index}{4};
+                netcdf.putVar(RepGrpID,Init_OutgassingID,Start,Count,Stride,Initial_Outgassing);
+            end
             
             netcdf.close(FileID);
         end
@@ -605,7 +623,7 @@ classdef GECCO < handle
         
         function Validate(self,Gui);
             self.ValidatedFlag = 0;
-            Max_Outgassing_Tracked = self.Runs(1).Regions(1).Conditions.GetMaxOutgassing(self.Runs(end).Chunks(end).TimeIn(2));
+            Max_Outgassing_Tracked = self.Runs(1).Regions(1).Conditions.GetMaxOutgassing(self.Runs(end).Chunks(end).Time_In(2));
             Initial_Outgassing_Length = self.Runs(1).Regions(1).Conditions.GetSizeOf("Initials","Outgassing");
             NoRunsFlag = 0;
             OutgassingLengthWrongFlag = 0;
@@ -710,7 +728,7 @@ classdef GECCO < handle
                     self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.LysoclineSolverToHandle();
                     self.Runs(Run_Index).Regions(1).Outputs = Output();
                     self.Runs(Run_Index).Regions(1).Conditions.UpdatePresent();
-                    self.Runs(Run_Index).Regions(1).Conditions.CalculateDependents(self.Runs(end).Chunks(end).TimeIn(2));
+                    self.Runs(Run_Index).Regions(1).Conditions.CalculateDependents(self.Runs(end).Chunks(end).Time_In(2));
                     self.Runs(Run_Index).Regions(1).Information = self.Runs(Run_Index).Information();
                     if self.SaveToRegionFilesFlag;
                         self.Runs(Run_Index).Regions(1).Information.Output_File = strcat(self.Runs(Run_Index).Regions(1).Information.Output_File,"_Region_",numstr(1));
@@ -746,7 +764,7 @@ classdef GECCO < handle
                     Initials_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions;
                     
                     % Preallocate output arrays
-                    DataChunks = cell(1:numel(self.Runs));
+                    DataChunks = cell(1:numel(self.Runs(Run_Index).Chunks));
                     
                     % Loop for each chunk
                     for Chunk_Index = 1:numel(self.Runs(Run_Index).Chunks);
@@ -762,7 +780,7 @@ classdef GECCO < handle
                         
                         % Reset the initial conditions
                         if Run_Index~=numel(self.Runs);
-                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{2}(:,end);
+                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
                             self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
                         else
                             self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
@@ -772,12 +790,13 @@ classdef GECCO < handle
                     
                     for Chunk_Index = 1:numel(DataChunks);
                         DataRun{Chunk_Index} = DataChunks{Chunk_Index}{1};
-                        ParameterRun{Chunk_Index} = DataChunks{Chunk_Index}{2};
-                        PICRun{Chunk_Index} = DataChunks{Chunk_Index}{3};
+                        DependentRun{Chunk_Index} = DataChunks{Chunk_Index}{2};
+                        ParameterRun{Chunk_Index} = DataChunks{Chunk_Index}{3};
+                        PICRun{Chunk_Index} = DataChunks{Chunk_Index}{4};
                     end
                     
                     % Assign to model object
-                    self.UnpackData(Run_Index,1,horzcat(DataRun{:}));
+                    self.UnpackData(Run_Index,1,horzcat(DataRun{:}),horzcat(DependentRun{:}));
                     self.Runs(Run_Index).Regions(1).Conditions.AssignConstants(horzcat(ParameterRun{:}));
                     self.Runs(Run_Index).Regions(1).Conditions.Presents.Carbon.PIC_Burial = horzcat(PICRun{:});
                     
@@ -838,7 +857,10 @@ classdef GECCO < handle
         function Replication_Data = MakeReplicationData(self);
             % Glue together run replication data, which is glued together
             % regional data
-            Replication_Data = self.Runs(1).MakeReplicationData();
+            for Run_Index = 1:numel(self.Runs);
+                Replication_Data{Run_Index} = self.Runs(Run_Index).MakeReplicationData();
+            end
+%             Replication_Data = vertcat(Replication_Data_Cells);
         end
         function ParseTransientData(self,Gui);
             if self.UsedGUIFlag;
@@ -928,28 +950,28 @@ classdef GECCO < handle
         end
         
         %%
-        function UnpackData(self,Run_Index,Region_Index,Data);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Time = Data(1,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Atmosphere_CO2 = Data(2,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Algae = Data(3,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Phosphate = Data(4:5,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.DIC = Data(6:7,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Alkalinity = Data(8:9,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Atmosphere_Temperature = Data(10,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Ocean_Temperature = Data(11:12,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Silicate = Data(13,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Silicate_Weathering_Fraction = Data(14,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Weathering_Fraction = Data(15,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Radiation = Data(16,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Ice = Data(17,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Sea_Level = Data(18,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Snow_Line = Data(19,:);
+        function UnpackData(self,Run_Index,Region_Index,Data,Dependents);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Atmosphere_CO2 = Data(1,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Algae = Data(2,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Phosphate = Data(3:4,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.DIC = Data(5:6,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Alkalinity = Data(7:8,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Atmosphere_Temperature = Data(9,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Ocean_Temperature = Data(10:11,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Silicate = Data(12,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Silicate_Weathering_Fraction = Data(13,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Weathering_Fraction = Data(14,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Radiation = Data(15,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Ice = Data(16,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Sea_Level = Data(17,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Snow_Line = Data(18,:);
             
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Lysocline = Data(20,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Total = Data(21,:);
-            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Exposed = Data(22,:);
-            if size(Data,1)>22;
-                self.Runs(Run_Index).Regions(Region_Index).Outputs.Cores = Data(23:end,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Time = Dependents(1,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Lysocline = Dependents(2,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Total = Dependents(3,:);
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Exposed = Dependents(4,:);
+            if size(Dependents,1)>4;
+                self.Runs(Run_Index).Regions(Region_Index).Outputs.Cores = Dependents(5:end,:);
             end
         end
         %%

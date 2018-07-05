@@ -26,19 +26,19 @@ classdef Region < matlab.mixin.Copyable
 %                 self.Data_Names = {'Atmosphere_CO2','Algae','Phosphate','DIC','Alkalinity'};
             end
             self.Data_Names = {'Atmosphere_CO2';
-                              'Algae';
-                              'Phosphate';
-                              'DIC';
-                              'Alkalinity';
-                              'Atmosphere_Temperature';
-                              'Ocean_Temperature';
-                              'Silicate';
-                              'Silicate_Weathering_Fraction';
-                              'Carbonate_Weathering_Fraction';
-                              'Radiation';
-                              'Ice';
-                              'Sea_Level';
-                              'Snow_Line'};
+                               'Algae';
+                               'Phosphate';
+                               'DIC';
+                               'Alkalinity';
+                               'Atmosphere_Temperature';
+                               'Ocean_Temperature';
+                               'Silicate';
+                               'Silicate_Weathering_Fraction';
+                               'Carbonate_Weathering_Fraction';
+                               'Radiation';
+                               'Ice';
+                               'Sea_Level';
+                               'Snow_Line'};
                           
             self.Data_Indices = {1,2,[3,4],[5,6],[7,8],9,[10,11],12,13,14,15,16,17,18,19};
         end
@@ -69,7 +69,7 @@ classdef Region < matlab.mixin.Copyable
         end
         
         %% Saving Data
-        function SaveData(self,Info,Run_Index,Region_Index);
+        function SaveData(self,Info,Region_Index,Run_Index);
 %             if isstring(Info);
 %                 Info = char(Info);
 %             end
@@ -188,7 +188,7 @@ classdef Region < matlab.mixin.Copyable
         %% Replication
         function Replication_Data = MakeReplicationData(self,Run_Data_In);
             for Chunk_Index = 1:numel(Run_Data_In.Chunks);
-                Run_Matrix(Chunk_Index,1:6) = [Run_Data_In.Chunks(Chunk_Index).TimeIn,Run_Data_In.Chunks(Chunk_Index).TimeOut];
+                Run_Matrix(Chunk_Index,1:6) = [Run_Data_In.Chunks(Chunk_Index).Time_In,Run_Data_In.Chunks(Chunk_Index).Time_Out];
             end
             Run_Data = Run_Matrix;
             
