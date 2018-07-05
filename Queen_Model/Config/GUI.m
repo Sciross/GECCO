@@ -1221,13 +1221,16 @@ classdef GUI < handle;
         end
 
         %% Log box
-        function UpdateLogBox(self,Message);
-            if ~isempty(self.LogMessages{self.SelectedRun});
-                self.LogMessages{self.SelectedRun} = [self.LogMessages{self.SelectedRun};Message];
-%                 self.LogBoxUI.String = [self.LogBoxUI.String;Message];
-            else
-                self.LogMessages{self.SelectedRun} = Message;
-%                 self.LogBoxUI.String = Message;
+        function UpdateLogBox(self,Message,Run_Numbers);
+            if nargin<3;
+                Run_Numbers = self.SelectedRun;
+            end
+            for Run_Index = 1:numel(Run_Numbers);
+                if ~isempty(self.LogMessages{Run_Numbers(Run_Index)});
+                    self.LogMessages{Run_Numbers(Run_Index)} = [self.LogMessages{Run_Numbers(Run_Index)};Message];
+                else
+                    self.LogMessages{Run_Numbers(Run_Index)} = Message;
+                end
             end
             self.LogBoxUI.String = self.LogMessages{self.SelectedRun};
             LogBoxObj = findjobj(self.LogBoxUI);
