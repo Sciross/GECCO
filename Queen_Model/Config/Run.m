@@ -137,9 +137,40 @@ classdef Run < handle
             Replication_Data = self.Regions(1).MakeReplicationData(self);
         end
         
+        %% Merging
+        function Unmerged_Names = GetUnmergedParameterGroupNames(self);
+            for Self_Index = 1:numel(self);
+                Unmerged_Names{Self_Index} = self(Self_Index).Regions.GetParameterGroupNames();
+            end
+        end
+        function Unmerged_Names = GetUnmergedParameterNames(self);
+            for Self_Index = 1:numel(self);
+                Unmerged_Names{Self_Index} = self(Self_Index).Regions.GetParameterNames();
+            end
+        end
+        
         %% Save
         function SelfPrepareNetCDF(self);
-            GECCO.PrepareNetCDF(self.Information.OutputFile,self.GetMaximumDimensionSizes(),self.Regions(1).Conditions.Constants.DimensionMap,self.DataIndices,self.DataNames,self.Runs(1).Regions(1).Conditions.GetVarNames(),self.MakeReplicationData());
+            File = self.Information.Output_File;
+            Parameter_Group_Names = self.Regions(1).Conditions.GetShallowNames(self.Runs(1).Regions(1).Conditions.Constants);
+            Parameter_Names = self.Regions(1).Conditions.GetDeepNames(self.Runs(1).Regions(1).Conditions.Constants);
+            Maximum_Data_Sizes = self.GetMaximumDimensionSizes();
+            Dimension_Map = self.Regions(1).Conditions.Presents.DimensionMap;
+            Data_Names = properties(self.Regions(1).Outputs);
+            Data_Size_Map = self.Regions(1).Outputs.Data_Size_Map;
+            Replication_Data = self.MakeReplicationData();
+            Model = self.Information.Model_Name;
+            Core = char(self.Regions(1).Conditions.Functionals.Core);
+            Solver = char(self.Regions(1).Conditions.Functionals.Solver);
+            CoreSolver = {Core,Solver};
+            for Region_Index = 1:numel(self.Regions);
+                Transient_Matrices{Region_Index} = self.Regions(Region_Index).Conditions.Transients.Matrix;
+            end
+            for Region_Index = 1:numel(self.Regions);
+                Perturbation_Matrices{Region_Index} = self.Regions(Region_Index).Conditions.Perturbations.Matrix;
+            end
+            
+            GECCO.PrepareNetCDF(File,Model,Data_Names,Maximum_Data_Sizes,Data_Size_Map,Parameter_Group_Names,Parameter_Names,Dimension_Map,Transient_Matrices,Perturbation_Matrices,Replication_Data,CoreSolver);
         end
         
         %% Load

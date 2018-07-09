@@ -204,5 +204,17 @@ classdef Region < matlab.mixin.Copyable
             self.Conditions.Load(Filename);
             self.Outputs.Load(Filename);
         end
+        
+        %% Merging
+        function Parameter_Group_Names = GetParameterGroupNames(self);
+            for Self_Index = 1:numel(self);
+                Parameter_Group_Names{Self_Index} = Condition.GetFirstLevelNames(self(Self_Index).Conditions.Constants);
+            end
+        end
+        function Parameter_Names = GetParameterNames(self);
+            for Self_Index = 1:numel(self);
+                Parameter_Names{Self_Index} = Condition.GetSecondLevelNames(self(Self_Index).Conditions.Constants);
+            end
+        end
     end
 end

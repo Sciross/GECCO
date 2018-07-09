@@ -701,12 +701,8 @@ classdef GECCO < handle
 
         
         %% Run
-        function RunModel(self,Gui);
-            self.MakeReplicationData();
-            self.ParseTransientData(Gui);
-            self.ParsePerturbationData(Gui);
-            
-            self.ShouldSaveFlag = any([self.SaveToSameFileFlag,self.SaveToRunFilesFlag]);
+        function RunModel(self,Gui);            
+%             self.ShouldSaveFlag = any([self.SaveToSameFileFlag,self.SaveToRunFilesFlag]);
             self.Information.SortOutFilepath();        
             self.Validate(Gui);
             for Run_Index = 1:numel(self.Runs);
@@ -720,7 +716,7 @@ classdef GECCO < handle
                 if self.UsedGUIFlag;
                     Gui.ColourBox.BackgroundColor = [1,1,0.5];
                     Gui.UpdateLogBox("Starting model runs...");
-                    drawnow;
+                    drawnow();
                 end
                 
                 self.DeleteExistingFile();
@@ -838,6 +834,59 @@ classdef GECCO < handle
             end
         end
         
+        %% Merging
+        function Unmerged_Names = GetUnmergedParameterGroupNames(self);
+            Unmerged_Names = self.Runs.GetUnmergedParameterGroupNames();
+        end
+        function Merged_Names = MergeParameterGroupNames(self,Unmerged_Names);
+            Names = "";
+            for Run_Index = 1:numel(Unmerged_Names);
+                for Region_Index = 1:numel(Unmerged_Names{Run_Index});
+                    Names = [Names;Unmerged_Names{Run_Index}{Region_Index}];
+                end
+            end
+            Merged_Names = unique(Names);
+            Merged_Names = Merged_Names(~strcmp(Merged_Names,""));
+        end
+        function Merged_Names = GetMergedParameterGroupNames(self);
+            Unmerged_Names = self.GetUnmergedParameterGroupNames();
+            Merged_Names = self.MergeParameterGroupNames(Unmerged_Names);
+        end
+        
+        function Unmerged_Names = GetUnmergedParameterNames(self);
+            Unmerged_Names = self.Runs.GetUnmergedParameterNames();
+        end
+        function Merged_Names = MergeParameterNames(self,Unmerged_Names);
+            % Get maximum size
+            for Run_Index = 1:numel(Unmerged_Names);
+                for Region_Index = 1:numel(Unmerged_Names{Run_Index});
+                    Sizes(Region_Index,Run_Index) = numel(Unmerged_Names{Run_Index}{Region_Index});
+                end
+            end
+            Maximum_Group_Number = max(Sizes(:));
+            
+            Names = cell(1,Maximum_Group_Number);
+            for Run_Index = 1:numel(Unmerged_Names);
+                for Region_Index = 1:numel(Unmerged_Names{Run_Index});
+                    for Group_Index = 1:numel(Unmerged_Names{Run_Index}{Region_Index});
+                        if isempty(Names{Group_Index});
+                            Names{Group_Index} = "";
+                        end
+                        Names{Group_Index} = [Names{Group_Index};Unmerged_Names{Run_Index}{Region_Index}{Group_Index}];
+                    end
+                end
+            end
+            
+            for Group_Index = 1:numel(Names);
+                Merged_Names{Group_Index} = unique(Names{Group_Index});
+                Merged_Names{Group_Index} = Merged_Names{Group_Index}(~strcmp(Merged_Names{Group_Index},""));
+            end
+        end
+        function Merged_Names = GetMergedParameterNames(self);
+            Unmerged_Names = self.GetUnmergedParameterNames();
+            Merged_Names = self.MergeParameterNames(Unmerged_Names);
+        end
+        
         %% Saving
         function DeleteExistingFile(self); 
             if self.ShouldSaveFlag && self.SaveToSameFileFlag;
@@ -929,12 +978,20 @@ classdef GECCO < handle
         end
         function SelfPrepareNetCDF(self);
             File = self.Information.Output_File;
-            Parameter_Group_Names = self.Runs(1).Regions(1).Conditions.GetShallowNames(self.Runs(1).Regions(1).Conditions.Constants);
-            Parameter_Names = self.Runs(1).Regions(1).Conditions.GetDeepNames(self.Runs(1).Regions(1).Conditions.Constants);
-            Maximum_Data_Sizes = self.GetMaximumDimensionSizes();
-            Dimension_Map = self.Runs(1).Regions(1).Conditions.Presents.DimensionMap;
+            % Assume that the first Run is representative of the correct model
+            self.GetMergedParameterGroupNames();
+            self.GetMergedParameterNames();
+            
+            self.GetMergedDataNames();
+            self.GetMergedDataSize();
+            
+            Parameter_Group_Names = self.Runs(1).Regions(1).Conditions.GetFirstLevelNames(self.Runs(1).Regions(1).Conditions.Constants);
+            Parameter_Names = self.Runs(1).Regions(1).Conditions.GetSecondLevelNames(self.Runs(1).Regions(1).Conditions.Constants);
             Data_Names = properties(self.Runs(1).Regions(1).Outputs);
             Data_Size_Map = self.Runs(1).Regions(1).Outputs.Data_Size_Map;
+            
+            Maximum_Data_Sizes = self.GetMaximumDimensionSizes();
+            Dimension_Map = self.Runs(1).Regions(1).Conditions.Presents.DimensionMap;
             Replication_Data = self.MakeReplicationData();
             Model = self.Information.Model_Name;
             Core = char(self.Runs(1).Regions(1).Conditions.Functionals.Core);
@@ -1015,6 +1072,15 @@ classdef GECCO < handle
                 end
             end
             Perturbations_Number = Count;
+        end
+        
+        %%
+        function ParseGUIPerturbations(self,Perturbations);
+            
+        end
+        
+        function ParseGUITransients(self,Transients);
+            
         end
         
         %% Loading Data

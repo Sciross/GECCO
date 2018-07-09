@@ -35,21 +35,21 @@ classdef Condition < matlab.mixin.Copyable
             end
         end
         
-        function ShallowNames = GetShallowNames(Input);
-            ShallowNames = string(fieldnames(Input));
+        function Shallow_Names = GetFirstLevelNames(Input);
+            Shallow_Names = string(fieldnames(Input));
         end
-        function DeepNames = GetDeepNames(Input);
-            ShallowNames = Condition.GetShallowNames(Input);
-            for Shallow_Index = 1:numel(ShallowNames);
-                DeepNames{Shallow_Index} = string(fieldnames(Input.(ShallowNames{Shallow_Index})));
+        function Deep_Names = GetSecondLevelNames(Input);
+            Shallow_Names = Condition.GetFirstLevelNames(Input);
+            for Shallow_Index = 1:numel(Shallow_Names);
+                Deep_Names{Shallow_Index} = string(fieldnames(Input.(Shallow_Names{Shallow_Index})));
             end   
         end
-        function [ShallowNames,DeepNames] = GetShallowAndDeepNames(Input);
-            ShallowNames = Condition.GetShallowNames(Input);
-            DeepNames = Condition.GetDeepNames(Input);
+        function [Shallow_Names,Deep_Names] = GetShallowAndDeepNames(Input);
+            Shallow_Names = Condition.GetShallowNames(Input);
+            Deep_Names = Condition.GetDeepNames(Input);
         end
         function Dotted_Names = GetDottedNames(Input);
-            Shallow_Names = string(Condition.GetShallowNames(Input));
+            Shallow_Names = string(Condition.GetFirstLevelNames(Input));
             for Shallow_Index = 1:numel(Shallow_Names);
                 Deep_Names{Shallow_Index} = string(fieldnames(Input.(Shallow_Names{Shallow_Index})));
             end

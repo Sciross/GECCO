@@ -1217,6 +1217,8 @@ classdef GUI < handle;
         %% Run Model
         function RunModel(self,src,event);
             self.Gecco.UsedGUIFlag = 1;
+%             self.Gecco.ParseGUIPerturbations(self.PertMatrix);
+%             self.Gecco.ParseGUITransients(self.TransMatrix);
             self.Gecco.RunModel(self);
         end
 
