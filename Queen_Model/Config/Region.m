@@ -216,5 +216,10 @@ classdef Region < matlab.mixin.Copyable
                 Parameter_Names{Self_Index} = Condition.GetSecondLevelNames(self(Self_Index).Conditions.Constants);
             end
         end
+        function Data_Names = GetDataNames(self);
+            for Self_Index = 1:numel(self);
+                Parameter_Names{Self_Index} =  properties(self.Outputs);
+            end
+        end
     end
 end

@@ -149,6 +149,12 @@ classdef Run < handle
             end
         end
         
+        function Unmerged_Names = GetUnmergedDataNames(self);
+            for Self_Index = 1:numel(self);
+                Unmerged_Names{Self_Index} = self(Self_Index).Regions.GetDataNames();
+            end
+        end
+        
         %% Save
         function SelfPrepareNetCDF(self);
             File = self.Information.Output_File;

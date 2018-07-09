@@ -887,6 +887,24 @@ classdef GECCO < handle
             Merged_Names = self.MergeParameterNames(Unmerged_Names);
         end
         
+        function Unmerged_Names = GetUnmergedDataNames(self);
+            Unmerged_Names = self.Runs.GetUnmergedDataNames();
+        end
+        function Merged_Names = MergeDataNames(self,Unmerged_Names);
+            Names = "";
+            for Run_Index = 1:numel(Unmerged_Names);
+                for Region_Index = 1:numel(Unmerged_Names{Run_Index});
+                    Names = [Names;Unmerged_Names{Run_Index}{Region_Index}];
+                end
+            end
+            Merged_Names = unique(Names);
+            Merged_Names = Merged_Names(~strcmp(Merged_Names,""));
+        end
+        function Merged_Names = GetMergedDataNames(self);
+            Unmerged_Names = self.GetUnmergedDataNames();
+            Merged_Names = self.MergeDataNames(Unmerged_Names);
+        end
+        
         %% Saving
         function DeleteExistingFile(self); 
             if self.ShouldSaveFlag && self.SaveToSameFileFlag;
