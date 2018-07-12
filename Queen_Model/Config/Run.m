@@ -155,6 +155,23 @@ classdef Run < handle
             end
         end
         
+        function Unmerged_Sizes = GetUnmergedDataSizes(self);
+            for Self_Index = 1:numel(self);
+                Unmerged_Sizes{Self_Index} = self(Self_Index).Regions.GetDataSizes();
+            end
+        end
+        
+        function Cores = GetCores(self);
+            for Self_Index = 1:numel(self);
+                Cores{Self_Index} = self.Regions.GetCores();
+            end
+        end
+        function Solvers = GetSolvers(self);
+            for Self_Index = 1:numel(self);
+                Solvers{Self_Index} = self.Regions.GetSolvers();
+            end
+        end
+        
         %% Save
         function SelfPrepareNetCDF(self);
             File = self.Information.Output_File;

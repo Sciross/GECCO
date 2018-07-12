@@ -905,6 +905,32 @@ classdef GECCO < handle
             Merged_Names = self.MergeDataNames(Unmerged_Names);
         end
         
+        function Unmerged_Sizes = GetUnmergedDataSizes(self);
+            Unmerged_Sizes = self.Runs.GetUnmergedDataSizes();
+        end
+        function Merged_Sizes = MergeDataSizes(self,Unmerged_Sizes);
+            Current_Map = Unmerged_Sizes{1}{1};
+            for Run_Index = 1:numel(Unmerged_Sizes);
+                for Region_Index = 1:numel(Unmerged_Sizes{Run_Index});
+                    if size(Unmerged_Sizes{Run_Index}{Region_Index},1)>size(Current_Map,1);
+                        Current_Map = Unmerged_Sizes{Run_Index}{Region_Index};
+                    end
+                end
+            end
+            Merged_Sizes = Current_Map;
+        end
+        function Merged_Sizes = GetMergedDataSizes(self);
+            Unmerged_Sizes = self.GetUnmergedDataSizes();
+            Merged_Sizes = self.MergeDataSizes(Unmerged_Sizes);
+        end
+        
+        function Cores = GetCores(self);
+            Cores = self.Runs.GetCores();
+        end
+        function Solvers = GetSolvers(self);
+            Solvers = self.Runs.GetSolvers();
+        end
+        
         %% Saving
         function DeleteExistingFile(self); 
             if self.ShouldSaveFlag && self.SaveToSameFileFlag;
@@ -996,25 +1022,27 @@ classdef GECCO < handle
         end
         function SelfPrepareNetCDF(self);
             File = self.Information.Output_File;
-            % Assume that the first Run is representative of the correct model
-            self.GetMergedParameterGroupNames();
-            self.GetMergedParameterNames();
+            Parameter_Group_Names = self.GetMergedParameterGroupNames();
+            Parameter_Names = self.GetMergedParameterNames();
             
-            self.GetMergedDataNames();
-            self.GetMergedDataSize();
+            Data_Names = self.GetMergedDataNames();
+            Data_Size_Map = self.GetMergedDataSizes();
             
-            Parameter_Group_Names = self.Runs(1).Regions(1).Conditions.GetFirstLevelNames(self.Runs(1).Regions(1).Conditions.Constants);
-            Parameter_Names = self.Runs(1).Regions(1).Conditions.GetSecondLevelNames(self.Runs(1).Regions(1).Conditions.Constants);
-            Data_Names = properties(self.Runs(1).Regions(1).Outputs);
-            Data_Size_Map = self.Runs(1).Regions(1).Outputs.Data_Size_Map;
+            % Assume that the first Run is representative of the correct model            
+%             Parameter_Group_Names = self.Runs(1).Regions(1).Conditions.GetFirstLevelNames(self.Runs(1).Regions(1).Conditions.Constants);
+%             Parameter_Names = self.Runs(1).Regions(1).Conditions.GetSecondLevelNames(self.Runs(1).Regions(1).Conditions.Constants);
+%             Data_Names = properties(self.Runs(1).Regions(1).Outputs);
+%             Data_Size_Map = self.Runs(1).Regions(1).Outputs.Data_Size_Map;
             
             Maximum_Data_Sizes = self.GetMaximumDimensionSizes();
             Dimension_Map = self.Runs(1).Regions(1).Conditions.Presents.DimensionMap;
             Replication_Data = self.MakeReplicationData();
             Model = self.Information.Model_Name;
-            Core = char(self.Runs(1).Regions(1).Conditions.Functionals.Core);
-            Solver = char(self.Runs(1).Regions(1).Conditions.Functionals.Solver);
-            CoreSolver = {Core,Solver};
+%             Core = char(self.Runs(1).Regions(1).Conditions.Functionals.Core);
+%             Solver = char(self.Runs(1).Regions(1).Conditions.Functionals.Solver);
+            Cores = self.GetCores();
+            Solvers = self.GetSolvers();
+            CoreSolver = {Cores,Solvers};
             for Run_Index = 1:numel(self.Runs);
                 Transient_Matrices{Run_Index} = self.Runs(Run_Index).Regions(1).Conditions.Transients.Matrix;
             end

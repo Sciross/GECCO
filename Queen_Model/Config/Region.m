@@ -218,7 +218,22 @@ classdef Region < matlab.mixin.Copyable
         end
         function Data_Names = GetDataNames(self);
             for Self_Index = 1:numel(self);
-                Parameter_Names{Self_Index} =  properties(self.Outputs);
+                Data_Names{Self_Index} =  properties(self.Outputs);
+            end
+        end
+        function Data_Sizes = GetDataSizes(self);
+            for Self_Index = 1:numel(self);
+                Data_Sizes{Self_Index} = self(Self_Index).Outputs.Data_Size_Map;
+            end
+        end
+        function Cores = GetCores(self);
+            for Self_Index = 1:numel(self);
+                Cores{Self_Index} = self.Conditions.Functionals.Core;
+            end
+        end
+        function Solvers = GetSolvers(self);
+            for Self_Index = 1:numel(self);
+                Solvers{Self_Index} = self.Conditions.Functionals.Solver;
             end
         end
     end
