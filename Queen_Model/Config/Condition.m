@@ -179,7 +179,7 @@ classdef Condition < matlab.mixin.Copyable
             if self.Constants.Seafloor.Subduction_Spread==0;
                 self.Presents.Seafloor.Subduction_Gauss = 0;
             else
-                self.Presents.Seafloor.Subduction_Gauss = (gaussmf(self.Constants.Architecture.Hypsometric_Bin_Midpoints,[self.Constants.Seafloor.Subduction_Spread,-self.Constants.Seafloor.Subduction_Mean]))*self.Constants.Seafloor.Subduction_Risk;
+                self.Presents.Seafloor.Subduction_Gauss = (GenerateGaussian(self.Constants.Architecture.Hypsometric_Bin_Midpoints,[self.Constants.Seafloor.Subduction_Spread,-self.Constants.Seafloor.Subduction_Mean]))*self.Constants.Seafloor.Subduction_Risk;
             end
             
             % Outgassing
@@ -188,7 +188,7 @@ classdef Condition < matlab.mixin.Copyable
             if self.Constants.Outgassing.Spread==0;
                 self.Presents.Outgassing.Gauss = 0;
             else
-                self.Presents.Outgassing.Gauss = gaussmf([-self.Constants.Outgassing.Spread*3:self.Constants.Outgassing.Temporal_Resolution:self.Constants.Outgassing.Spread*3],[self.Constants.Outgassing.Spread,0]);
+                self.Presents.Outgassing.Gauss = GenerateGaussian([-self.Constants.Outgassing.Spread*3:self.Constants.Outgassing.Temporal_Resolution:self.Constants.Outgassing.Spread*3],[self.Constants.Outgassing.Spread,0]);
                 self.Presents.Outgassing.Gauss = (self.Presents.Outgassing.Gauss/sum(self.Presents.Outgassing.Gauss))';
             end
                 

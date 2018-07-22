@@ -85,7 +85,7 @@ classdef GUI < handle;
     end
     methods
         function self = GUI(FileInput);
-            Model_Filepath = which('GUI.m');
+            Model_Filepath = strrep(which('GUI.m'),'\','/');
             Model_Dir = Model_Filepath(1:end-12);
             self.Logo = imread(char(strcat(Model_Dir,"/Resources/Logo.png")));
 %             CurrentDir = dir('.');
@@ -94,8 +94,8 @@ classdef GUI < handle;
                 error('Model not found, add to path');
             end
             
-            Split_Dir = strsplit((Model_Dir),'/');
-            disp([Split_Dir{7},' GUI instantiated']);
+            Split_Dir = strsplit((Model_Dir),{'/','\'});
+            disp([Split_Dir{end-1},' GUI instantiated']);
             
             self.Gecco = GECCO;
             
@@ -103,7 +103,7 @@ classdef GUI < handle;
                 FileInput = 'none';
             end
             
-            Temp = load('Colours.mat');
+            Temp = load([Model_Dir,'Resources/Colours.mat']);
             self.Colours = Temp.Colours;
             
             self.BoxSize{1} = [0.38,0.175];
