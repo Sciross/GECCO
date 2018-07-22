@@ -94,7 +94,7 @@ classdef GUI < handle;
                 error('Model not found, add to path');
             end
             
-            Split_Dir = strsplit((Model_Dir),'\');
+            Split_Dir = strsplit((Model_Dir),'/');
             disp([Split_Dir{7},' GUI instantiated']);
             
             self.Gecco = GECCO;
@@ -112,7 +112,7 @@ classdef GUI < handle;
             
             self.Handle = figure('Position',[100,100,1100,600]); 
             self.Size = get(self.Handle,'Position');
-            addpath([Model_Dir,'Functions\Solvers\']);
+            addpath([Model_Dir,'Functions/Solvers/']);
             
             %% Tabbing
             self.TabGroupHandle = uitabgroup('Parent',self.Handle,...
@@ -178,8 +178,8 @@ classdef GUI < handle;
             if strcmp(self.SplashInputFileUI.String,"Input File");
                 [InputFilename,InputFilepath] = uigetfile('*.nc','DefaultName','./../../../Results/');
             else
-                SplitSearchFilepath = string(strsplit(self.SplashInputFileUI.String,'\'));
-                SearchFilepath = strjoin(SplitSearchFilepath(1:end-1),'\');
+                SplitSearchFilepath = string(strsplit(self.SplashInputFileUI.String,'/'));
+                SearchFilepath = strjoin(SplitSearchFilepath(1:end-1),'/');
                 [InputFilename,InputFilepath] = uigetfile('*.nc','DefaultName',char(SearchFilepath));
             end
             if InputFilename~=0;
@@ -370,7 +370,7 @@ classdef GUI < handle;
         % Gets available models
         function GetInstalledModels(self,src,event);
             % Looks for directory contents matching pattern
-            DirectoryContentsModelsFull = dir([self.ModelDirectory,'..\*_Model*']);
+            DirectoryContentsModelsFull = dir([self.ModelDirectory,'../*_Model*']);
             % Concatenates the names from the struct
             self.InstalledModels = vertcat({'-',DirectoryContentsModelsFull(:).name});
             % Sets the appropriate string
@@ -381,7 +381,7 @@ classdef GUI < handle;
             % Once an option has been selected
             if ~isempty(self.CoreUI);
                 % Looks for directory contents matching pattern
-                AvailableCoresFull = dir([self.ModelDirectory,'Core\**\*.m']);
+                AvailableCoresFull = dir([self.ModelDirectory,'Core/**/*.m']);
                 % Concatenates the names from the struct
                 self.AvailableCores = strrep(vertcat({AvailableCoresFull(:).name}),'.m','');
                 % Sets the appropriate string

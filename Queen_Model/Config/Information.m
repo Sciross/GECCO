@@ -23,7 +23,7 @@ classdef Information < handle
                     self.Output_Filepath = ".";
                 end
                 if ~strcmp(self.Output_Filepath,"") && ~strcmp(self.Output_Filepath,"");
-                    self.Output_File = strcat(self.Output_Filepath,"\",self.Output_Filename);
+                    self.Output_File = strcat(self.Output_Filepath,"/",self.Output_Filename);
                 end
             end
         end

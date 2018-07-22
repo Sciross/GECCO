@@ -131,7 +131,7 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
         
         function Available_Solvers = GetAvailableSolvers(self,src,event);
             % Looks for directory contents matching pattern
-            AvailableSolversStruct = dir([self.Model_Directory,'\Functions\Carbonate_Chemistry\pH\Carbonate_Chemistry_Solver*.m']);
+            AvailableSolversStruct = dir([self.Model_Directory,'/Functions/Carbonate_Chemistry/pH/Carbonate_Chemistry_Solver*.m']);
             Available_Solvers = strings(size(AvailableSolversStruct,1),1);
             
             for SolverIndex = 1:numel(Available_Solvers);
@@ -143,7 +143,7 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
         end
         function Available_Lysocline_Solvers = GetAvailableLysoclineSolvers(self,src,event);
             % Looks for directory contents matching pattern
-            AvailableSolversStruct = dir([self.Model_Directory,'\Functions\Carbonate_Chemistry\Lysocline\Lysocline_Solver*.m']);
+            AvailableSolversStruct = dir([self.Model_Directory,'/Functions/Carbonate_Chemistry/Lysocline/Lysocline_Solver*.m']);
             Available_Lysocline_Solvers = strings(size(AvailableSolversStruct,1),1);
             
             for SolverIndex = 1:numel(Available_Lysocline_Solvers);

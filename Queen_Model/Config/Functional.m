@@ -49,7 +49,7 @@ classdef Functional < matlab.mixin.Copyable
         %% Gets available solvers
         function AvailableSolvers = GetAvailableSolvers(self,src,event);
             % Looks for directory contents matching pattern
-            AvailableSolversStruct = dir([self.ModelDirectory,'Functions\Solvers\*.m']);
+            AvailableSolversStruct = dir([self.ModelDirectory,'Functions/Solvers/*.m']);
             AvailableSolvers = strings(size(AvailableSolversStruct,1),1);
             
             for SolverIndex = 1:numel(AvailableSolvers);
