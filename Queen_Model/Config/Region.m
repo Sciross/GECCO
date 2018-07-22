@@ -236,5 +236,26 @@ classdef Region < matlab.mixin.Copyable
                 Solvers{Self_Index} = self.Conditions.Functionals.Solver;
             end
         end
+        function Dimension_Maps = GetDimensionMaps(self);
+            for Self_Index = 1:numel(self);
+                Dimension_Maps{Self_Index} = self(Self_Index).Conditions.Presents.DimensionMap;
+            end
+        end
+        
+        %         function SeafloorSizes = GetSeafloorSizes(self);
+        %             for Self_Index = 1:numel(self);
+        %                 SeafloorSizes{Self_Index} = self(Self_Index).Conditions.GetSizeOf("Constants","Architecture","Hypsometric_Bin_Midpoints");
+        %             end
+        %         end
+        
+        function Sizes = GetSizeOf(self,Type,Group,Name);
+            if nargin<4;
+                Name = Group;
+                Group = "";
+            end
+            for Self_Index = 1:numel(self);
+                Sizes{Self_Index} = self(Self_Index).Conditions.GetSizeOf(Type,Group,Name);
+            end
+        end
     end
 end

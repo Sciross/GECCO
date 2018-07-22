@@ -12,11 +12,7 @@ classdef ParameterLoad < handle
             % Deal with the Index            
             FileID = netcdf.open(Filename,'NOWRITE');
             ParamGrpID = netcdf.inqNcid(FileID,'Parameters');
-            if strcmp(class(self),"CarbonateChemistry");
-                ParamSubGrpID = netcdf.inqNcid(ParamGrpID,'Carbonate_Chemistry');
-            else
-                ParamSubGrpID = netcdf.inqNcid(ParamGrpID,class(self));
-            end
+            ParamSubGrpID = netcdf.inqNcid(ParamGrpID,class(self));
             try
                 VarID = netcdf.inqVarID(ParamSubGrpID,Individual);
             catch

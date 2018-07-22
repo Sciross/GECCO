@@ -112,19 +112,19 @@ classdef GECCO < handle
             netcdf.defDim(FileID,Dimd{1},Dimd{2});
             
             % Seafloor
-            Dims = {'s',Values(3)};
+            Dims = {'s',Values(5)};
             netcdf.defDim(FileID,Dims{1},Dims{2});
             
             % Carbonate
-            Dimc = {'c',Values(4)};
+            Dimc = {'c',Values(6)};
             netcdf.defDim(FileID,Dimc{1},Dimc{2});
             
             % Outgassing
-            Dimm = {'m',Values(5)};
+            Dimm = {'m',Values(7)};
             netcdf.defDim(FileID,Dimm{1},Dimm{2});
             
             % Gauss
-            Dimg = {'g',Values(6)};
+            Dimg = {'g',Values(8)};
             netcdf.defDim(FileID,Dimg{1},Dimg{2});
             
             % Single Constant
@@ -408,20 +408,20 @@ classdef GECCO < handle
             FileID = netcdf.open(Filename,'WRITE');            
             
             FuncGrpID = netcdf.inqNcid(FileID,'Functionals');
-            for Run_Index = 1:numel(Run_Number);                  
-                    % First define the variable  
-                    CurrentDims = {'k','u_2','r','R'};
-                    netcdf.reDef(FileID);
-                    CoreVarID = netcdf.defVar(FuncGrpID,'Core','char',GECCO.DimToDimID(FileID,CurrentDims));
-                    SolverVarID = netcdf.defVar(FuncGrpID,'Solver','char',GECCO.DimToDimID(FileID,CurrentDims));
-                    netcdf.endDef(FileID);
+            % First define the variable  
+            CurrentDims = {'k','u_2','r','R'};
+            netcdf.reDef(FileID);
+            CoreVarID = netcdf.defVar(FuncGrpID,'Core','char',GECCO.DimToDimID(FileID,CurrentDims));
+            SolverVarID = netcdf.defVar(FuncGrpID,'Solver','char',GECCO.DimToDimID(FileID,CurrentDims));
+            netcdf.endDef(FileID);
                     
-                   
-                    Start = [0,0,0,Run_Index-1];
-                    Count = [1,numel(CoreSolver{1}),1,1];
-                    netcdf.putVar(FuncGrpID,CoreVarID,Start,Count,CoreSolver{1});
-                    Count = [1,numel(CoreSolver{2}),1,1];
-                    netcdf.putVar(FuncGrpID,SolverVarID,Start,Count,CoreSolver{2});
+            for Run_Index = 1:Run_Number;  
+                Start = [0,0,0,Run_Index-1];
+                Count = [1,numel(char(CoreSolver{1}{Run_Index}{1})),1,1];
+                netcdf.putVar(FuncGrpID,CoreVarID,Start,Count,char(CoreSolver{1}{Run_Index}{1}));
+                
+                Count = [1,numel(char(CoreSolver{2}{Run_Index}{1})),1,1];
+                netcdf.putVar(FuncGrpID,SolverVarID,Start,Count,char(CoreSolver{2}{Run_Index}{1}));
             end
             
             netcdf.close(FileID);
@@ -565,56 +565,73 @@ classdef GECCO < handle
         %%
         function Values = GetDimensionSizes(self);
             Values(1) = numel(self.Runs);
-            Values(2) = max(self.GetOutputTimestepCount());
-            Values(3) = max(self.GetSeafloorSize());
-            Values(4) = max(self.GetCoreDepthSize());
-            Values(5) = max(self.GetOutgassingSize());
-            Values(6) = max(self.GetOutgassingGaussianSize());
+            Values(2) = max(self.GetOutputTimestepCount());            
+            Values(3) = self.GetMaximumChunkNumber();
+            Values(4) = self.GetMaximumSizeOf("Initials","Conditions");
+            Values(5) = self.GetMaximumSizeOf("Constants","Architecture","Hypsometric_Bin_Midpoints");
+            Values(6) = self.GetMaximumSizeOf("Constants","Seafloor","Core_Depths"); %max(self.GetCoreDepthSize());
+            Values(7) = self.GetMaximumSizeOf("Initials","Outgassing"); %max(self.GetOutgassingSize());
+            Values(8) = self.GetMaximumSizeOf("Presents","Outgassing","Gauss"); %max(self.GetOutgassingGaussianSize());        
         end
-        function MakeDimensionMap(self);
-            for RunIndex = 1:numel(self.Runs);
-                self.Runs(RunIndex).Regions(1).Conditions.Presents.MakeDimensionMap();
-                self.Runs(RunIndex).Regions(1).Conditions.Presents.UpdateDimensionMap(self.Runs(RunIndex).Regions(1).Conditions.Transients.Matrix);
+        function MakeDimensionMap(self,Run_Number);
+            if nargin<2;
+                for Run_Index = 1:numel(self.Runs);
+                    self.Runs(Run_Index).Regions(1).Conditions.Presents.MakeDimensionMap();
+                    self.Runs(Run_Index).Regions(1).Conditions.Presents.UpdateDimensionMap(self.Runs(Run_Index).Regions(1).Conditions.Transients.Matrix);
+                end
+            else
+                for Run_Index = Run_Number;
+                    self.Runs(Run_Index).Regions(1).Conditions.Presents.MakeDimensionMap();
+                    self.Runs(Run_Index).Regions(1).Conditions.Presents.UpdateDimensionMap(self.Runs(Run_Index).Regions(1).Conditions.Transients.Matrix);
+                end
             end
-        end
-        function MaximumDimensionSizes = GetMaximumDimensionSizes(self);
-            for Run_Index = 1:numel(self.Runs);
-                Sizes(1,:) = self.GetDimensionSizes();
-            end
-            MaximumDimensionSizes = max(Sizes,1);
-%             Keys = keys(Maps{1});
-%             for Run_Index = 1:numel(self.Runs);
-%                 for Key_Index = 1:numel(Keys);
-%                     Size{Run_Index,Key_Index} = size(Maps{Run_Index}(Keys{Key_Index}));
-%                 end
-%             end
         end
         
-        function SeafloorSize = GetSeafloorSize(self);
+        function Maximum_Chunk_Number = GetMaximumChunkNumber(self);
             for Run_Index = 1:numel(self.Runs);
-                SeafloorSize(Run_Index) = self.Runs(Run_Index).Regions(1).Conditions.GetSizeOf("Constants","Architecture","Hypsometric_Bin_Midpoints");
+                Chunk_Number(Run_Index) = numel(self.Runs(Run_Index).Chunks);
+            end
+            Maximum_Chunk_Number = max(Chunk_Number);
+        end
+        function Sizes = GetSizeOf(self,Type,Group,Name);
+            if nargin<4;
+                Name = Group;
+                Group = "";
+            end
+            Sizes = self.Runs.GetSizeOf(Type,Group,Name);
+        end
+        function GetCellMaximum(self,Cell);
+            Value = [];
+            for Cell_Index = 1:numel(Cell);
+                if isempty(Value) || Cell{Cell_Index}>Value;
+                    Value = Cell{Cell_Index};
+                end
             end
         end
-        function CoreDepthSize = GetCoreDepthSize(self);
-            for Run_Index = 1:numel(self.Runs);
-                CoreDepthSize(Run_Index) = self.Runs(Run_Index).Regions(1).Conditions.GetSizeOf("Constants","Seafloor","Core_Depths");
+        function Cell = CellMaximumIterate(self,Cell);
+            while iscell(Cell);
+                for Cell_Index = 1:numel(Cell);
+                    if ~iscell(Cell);
+                        break
+                    elseif iscell(Cell{Cell_Index});
+                        Cell{Cell_Index} = self.CellMaximumIterate(Cell{Cell_Index});
+                    else
+                        Cell = max(Cell{Cell_Index});
+                    end
+                end
             end
+            
         end
-        function OutgassingSize = GetOutgassingSize(self);
-            for Run_Index = 1:numel(self.Runs);
-                OutgassingSize(Run_Index) = self.Runs(Run_Index).Regions(1).Conditions.GetSizeOf("Initials","Outgassing");;
+        function Maximum_Size = GetMaximumSizeOf(self,Type,Group,Name);
+            if nargin<4;
+                Name = Group;
+                Group = "";
             end
+            
+            Sizes = self.GetSizeOf(Type,Group,Name);
+            Maximum_Size = self.CellMaximumIterate(Sizes);
         end
-        function OutgassingGaussianSize = GetOutgassingGaussianSize(self);
-            for Run_Index = 1:numel(self.Runs);
-                OutgassingGaussianSize(Run_Index) = self.Runs(Run_Index).Regions(1).Conditions.GetSizeOf("Presents","Outgassing","Gauss");
-            end
-        end
-        function Timestep = GetTimestepCount(self);
-            for Run_Index = 1:numel(self.Runs);
-                Timestep(Run_Index) = self.Runs(Run_Index).GetTimestepCount();
-            end
-        end
+        
         function Timestep = GetOutputTimestepCount(self);
             for Run_Index = 1:numel(self.Runs);
                 Timestep(Run_Index) = self.Runs(Run_Index).GetOutputTimestepCount();
@@ -639,7 +656,11 @@ classdef GECCO < handle
                 end
             end
             
-            [SameFileFlag,RunFilesFlag,RegionFilesFlag] = self.ValidateSaveFlags(Gui);
+            if self.UsedGUIFlag;
+                [SameFileFlag,RunFilesFlag,RegionFilesFlag] = self.ValidateSaveFlags(Gui);
+            else
+                [SameFileFlag,RunFilesFlag,RegionFilesFlag] = self.ValidateSaveFlags();
+            end
             
             Flags = [NoRunsFlag,OutgassingLengthWrongFlag,SameFileFlag,RunFilesFlag,RegionFilesFlag];
             if any(Flags);
@@ -685,7 +706,7 @@ classdef GECCO < handle
                 % Runs
                 if self.SaveToRunFilesFlag;
                     for Run_Index=1:numel(self.Runs);
-                        if strcmp(self.Runs(Run_Index).Information.OutputFile,"");
+                        if strcmp(self.Runs(Run_Index).Information.Output_File,"");
                             RunFilesFlag = 1;
                             if self.UsedGUIFlag;
                                 Gui.UpdateLogBox("Save to run files output file is empty");
@@ -698,13 +719,23 @@ classdef GECCO < handle
 %                 end
             end
         end
-
         
         %% Run
-        function RunModel(self,Gui);            
-%             self.ShouldSaveFlag = any([self.SaveToSameFileFlag,self.SaveToRunFilesFlag]);
-            self.Information.SortOutFilepath();        
-            self.Validate(Gui);
+        function RunModel(self,Gui);
+            self.Information.SortOutFilepath();
+            for Run_Index = 1:numel(self.Runs);
+                self.Runs(Run_Index).Information.SortOutFilepath();
+            end
+            for Run_Index = 1:numel(self.Runs);
+                for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                    self.Runs(Run_Index).Regions(Region_Index).Information.SortOutFilepath();
+                end
+            end
+            if self.UsedGUIFlag;
+                self.Validate(Gui);
+            else
+                self.Validate();
+            end
             for Run_Index = 1:numel(self.Runs);
                 RunsValidatedFlags(Run_Index) = self.Runs(Run_Index).Validate();
             end
@@ -712,7 +743,7 @@ classdef GECCO < handle
             self.ValidatedFlag = self.ValidatedFlag && all(RunsValidatedFlags);
             
             if self.ValidatedFlag;
-                profile on;
+%                 profile on;
                 if self.UsedGUIFlag;
                     Gui.ColourBox.BackgroundColor = [1,1,0.5];
                     Gui.UpdateLogBox("Starting model runs...");
@@ -738,8 +769,15 @@ classdef GECCO < handle
                         self.SelfPrepareNetCDF();
                     end
                     if self.SaveToRunFilesFlag();
-                        for Run_Index = 1:numel(Runs);
+                        for Run_Index = 1:numel(self.Runs);
                             self.Runs(Run_Index).SelfPrepareNetCDF();
+                        end
+                    end
+                    if self.SaveToRegionFilesFlag();
+                        for Run_Index = 1:numel(self.Runs);
+                            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                                self.Runs(Run_Index).Regions(Region_Index).SelfPrepareNetCDF();
+                            end
                         end
                     end
                 end
@@ -750,11 +788,6 @@ classdef GECCO < handle
                     DateTime(1) = datetime('now');
                     if self.UsedGUIFlag;
                         Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," starting "," @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
-                    end
-                
-                    % Start Save
-                    if self.ShouldSaveFlag && self.SaveToRunFilesFlag;
-                        self.Runs(Run_Index).Outputs.StartSave(self.OutputFile,self.GetDimensionSizes(),self.DimensionMap);
                     end
                     
                     % Keep a copy of initial
@@ -808,7 +841,7 @@ classdef GECCO < handle
                             self.Runs(Run_Index).Regions(1).Save(self.Information,1,Run_Index);
                         end
                         if self.SaveToRunFilesFlag;
-                            self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information,1,Run_Index);
+                            self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information,1,1);
                         end
                         if self.SaveToRegionFilesFlag;
                             for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
@@ -830,8 +863,168 @@ classdef GECCO < handle
                     Gui.ColourBox.BackgroundColor = [0,0.5,0.3];
                 end
 
-                profile off;
+%                 profile off;
             end
+        end
+        function RunModel_SingleRun(self,Run_Index,Gui);
+            self.Information.SortOutFilepath();
+%             for Run_Index = 1:numel(self.Runs);
+                self.Runs(Run_Index).Information.SortOutFilepath();
+%             end
+%             for Run_Index = 1:numel(self.Runs);
+                for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                    self.Runs(Run_Index).Regions(Region_Index).Information.SortOutFilepath();
+                end
+%             end
+            if self.UsedGUIFlag;
+                self.Validate(Gui);
+            else
+                self.Validate();
+            end
+%             for Run_Index = 1:numel(self.Runs);
+                RunsValidatedFlags = self.Runs(Run_Index).Validate();
+%             end
+                        
+            self.ValidatedFlag = self.ValidatedFlag && all(RunsValidatedFlags);
+            
+            if self.ValidatedFlag;
+%                 profile on;
+                if self.UsedGUIFlag;
+                    Gui.ColourBox.BackgroundColor = [1,1,0.5];
+                    Gui.UpdateLogBox("Starting model runs...");
+                    drawnow();
+                end
+                
+                self.DeleteExistingFile();
+%                 for Run_Index = 1:numel(self.Runs);
+                    self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.SolverToHandle();
+                    self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.LysoclineSolverToHandle();
+                    self.Runs(Run_Index).Regions(1).Outputs = Output();
+                    self.Runs(Run_Index).Regions(1).Conditions.UpdatePresent();
+                    self.Runs(Run_Index).Regions(1).Conditions.CalculateDependents(self.Runs(end).Chunks(end).Time_In(2));
+                    self.Runs(Run_Index).Regions(1).Information = self.Runs(Run_Index).Information();
+                    if self.SaveToRegionFilesFlag;
+                        self.Runs(Run_Index).Regions(1).Information.Output_File = strcat(self.Runs(Run_Index).Regions(1).Information.Output_File,"_Region_",numstr(1));
+                    end
+%                 end
+                
+                if self.ShouldSaveFlag;
+                    self.MakeDimensionMap(Run_Index);
+                    if self.SaveToSameFileFlag();
+                        self.SelfPrepareNetCDF();
+                    end
+                    if self.SaveToRunFilesFlag();
+%                         for Run_Index = 1:numel(self.Runs);
+                            self.Runs(Run_Index).SelfPrepareNetCDF();
+%                         end
+                    end
+                    if self.SaveToRegionFilesFlag();
+%                         for Run_Index = 1:numel(self.Runs);
+                            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                                self.Runs(Run_Index).Regions(Region_Index).SelfPrepareNetCDF();
+                            end
+%                         end
+                    end
+                end
+                
+%                 try
+                % Loop for runs
+%                 for Run_Index = 1:numel(self.Runs);
+                    DateTime(1) = datetime('now');
+                    if self.UsedGUIFlag;
+                        Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," starting "," @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
+                    end
+                    
+                    % Keep a copy of initial
+                    Initials_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions;
+                    
+                    % Preallocate output arrays
+                    DataChunks = cell(1:numel(self.Runs(Run_Index).Chunks));
+                    
+                    % Loop for each chunk
+                    for Chunk_Index = 1:numel(self.Runs(Run_Index).Chunks);
+                        % Apply the relevant perturbations on a per model-run basis
+                        self.Runs(Run_Index).Regions(1).Conditions.Perturb(self.Runs(Run_Index).Regions(1).Conditions.Perturbations.Matrix,Chunk_Index);
+                        
+                        % Create anonymous function
+                        ODEFunc = eval(strcat("@(t,y,y_Sub,y_Meta,Chunk)",self.Runs(Run_Index).Regions(1).Conditions.Functionals.Core,"(t,y,y_Sub,y_Meta,Chunk,self.Runs(Run_Index).Regions(1))"));
+                        
+                        % Run the solver
+                        SolverFunction = str2func(self.Runs(Run_Index).Regions(1).Conditions.Functionals.Solver);
+                        DataChunks{Chunk_Index} = SolverFunction(ODEFunc,self.Runs(Run_Index),Chunk_Index);
+                        
+                        % Reset the initial conditions
+                        if Run_Index~=numel(self.Runs);
+                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
+                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
+                        else
+                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
+                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
+                        end
+                    end
+                    
+                    for Chunk_Index = 1:numel(DataChunks);
+                        DataRun{Chunk_Index} = DataChunks{Chunk_Index}{1};
+                        DependentRun{Chunk_Index} = DataChunks{Chunk_Index}{2};
+                        ParameterRun{Chunk_Index} = DataChunks{Chunk_Index}{3};
+                        PICRun{Chunk_Index} = DataChunks{Chunk_Index}{4};
+                    end
+                    
+                    % Assign to model object
+                    self.UnpackData(Run_Index,1,horzcat(DataRun{:}),horzcat(DependentRun{:}));
+                    self.Runs(Run_Index).Regions(1).Conditions.AssignConstants(horzcat(ParameterRun{:}));
+                    self.Runs(Run_Index).Regions(1).Conditions.Presents.Carbon.PIC_Burial = horzcat(PICRun{:});
+                    
+                    if self.UsedGUIFlag;
+                        % Display when run is complete
+                        Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," complete @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
+                    end
+                    
+                    % Save data to one file when each run is done
+                    if self.ShouldSaveFlag;
+                        if self.SaveToSameFileFlag;
+                            self.Runs(Run_Index).Regions(1).Save(self.Information,1,Run_Index);
+                        end
+                        if self.SaveToRunFilesFlag;
+                            self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information,1,1);
+                        end
+                        if self.SaveToRegionFilesFlag;
+                            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                                self.Runs(Run_Index).Regions(Region_Index).Save(self.Runs(Run_Index).Regions(Region_Index).Information,Region_Index,Run_Index);
+                            end
+                        end
+                    end
+                                        
+                    % Email
+%                     sendtheemail('ross.whiteford@soton.ac.uk','Model Run Complete',['Your model run saving to ',self.OutputFilepath,' finished at ',char(datetime('now','Format','HH:mm:ss'))])
+%                 end
+%                 catch ME
+%                     self.UpdateLogBox('Error!');
+%                 end
+                  
+                % Print to log box
+                if self.UsedGUIFlag;
+                    Gui.UpdateLogBox("Successfully completed model runs!");
+                    Gui.ColourBox.BackgroundColor = [0,0.5,0.3];
+                end
+
+%                 profile off;
+            end
+        end
+        function RunModelOnIridis(self);
+            % Create a cluster object
+            Cluster = parcluster;
+            % Create a job
+            Job = createJob(Cluster);
+            % Manipulate self here
+            
+            % Create tasks
+            for Run_Index = 1:numel(self.Runs);
+                Task{Run_Index} = createTask(Job,@self.RunModel_SingleRun,0,{self,Run_Index});
+            end
+            
+            submit(job);
+            
         end
         
         %% Merging
@@ -845,7 +1038,7 @@ classdef GECCO < handle
                     Names = [Names;Unmerged_Names{Run_Index}{Region_Index}];
                 end
             end
-            Merged_Names = unique(Names);
+            Merged_Names = unique(Names,'stable');
             Merged_Names = Merged_Names(~strcmp(Merged_Names,""));
         end
         function Merged_Names = GetMergedParameterGroupNames(self);
@@ -929,6 +1122,49 @@ classdef GECCO < handle
         end
         function Solvers = GetSolvers(self);
             Solvers = self.Runs.GetSolvers();
+        end
+        
+        function Unmerged_Dimension_Maps = GetUnmergedDimensionMaps(self);
+            Unmerged_Dimension_Maps = self.Runs.GetUnmergedDimensionMaps();
+        end
+        function Merged_Dimension_Map = MergeDimensionMaps(self,Unmerged_Dimension_Maps);
+            Merged_Map = containers.Map();            
+            for Run_Index = 1:numel(self.Runs);
+                for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                    Current_Dimension_Map = Unmerged_Dimension_Maps{Run_Index}{Region_Index};
+                    Current_Keys = keys(Current_Dimension_Map);
+                    Current_Values = values(Current_Dimension_Map);
+                    
+                    for Key_Index = 1:numel(Current_Keys);
+                        if ~isKey(Merged_Map,Current_Keys{Key_Index});
+                            Merged_Map(Current_Keys{Key_Index}) = Current_Values{Key_Index};
+                        elseif isKey(Merged_Map,Current_Keys{Key_Index});
+                            Current_Sizes = Merged_Map(Current_Keys{Key_Index});
+                            if Current_Values{Key_Index}{2}>Current_Sizes{2};
+                                Merged_Map(Current_Keys{Key_Index}) = Current_Values{Key_Index};
+                            end
+                        end
+                    end  
+                end
+            end
+            Merged_Dimension_Map = Merged_Map;
+        end
+        function Merged_Dimension_Map = GetMergedDimensionMap(self);
+            Unmerged_Dimension_Maps = self.GetUnmergedDimensionMaps();
+            Merged_Dimension_Map = self.MergeDimensionMaps(Unmerged_Dimension_Maps);
+        end
+        
+        function MaximumDimensionSizes = GetMaximumDimensionSizes(self);
+            for Run_Index = 1:numel(self.Runs);
+                Sizes(1,:) = self.GetDimensionSizes();
+            end
+            MaximumDimensionSizes = max(Sizes,1);
+%             Keys = keys(Maps{1});
+%             for Run_Index = 1:numel(self.Runs);
+%                 for Key_Index = 1:numel(Keys);
+%                     Size{Run_Index,Key_Index} = size(Maps{Run_Index}(Keys{Key_Index}));
+%                 end
+%             end
         end
         
         %% Saving
@@ -1028,21 +1264,16 @@ classdef GECCO < handle
             Data_Names = self.GetMergedDataNames();
             Data_Size_Map = self.GetMergedDataSizes();
             
-            % Assume that the first Run is representative of the correct model            
-%             Parameter_Group_Names = self.Runs(1).Regions(1).Conditions.GetFirstLevelNames(self.Runs(1).Regions(1).Conditions.Constants);
-%             Parameter_Names = self.Runs(1).Regions(1).Conditions.GetSecondLevelNames(self.Runs(1).Regions(1).Conditions.Constants);
-%             Data_Names = properties(self.Runs(1).Regions(1).Outputs);
-%             Data_Size_Map = self.Runs(1).Regions(1).Outputs.Data_Size_Map;
-            
-            Maximum_Data_Sizes = self.GetMaximumDimensionSizes();
-            Dimension_Map = self.Runs(1).Regions(1).Conditions.Presents.DimensionMap;
-            Replication_Data = self.MakeReplicationData();
-            Model = self.Information.Model_Name;
-%             Core = char(self.Runs(1).Regions(1).Conditions.Functionals.Core);
-%             Solver = char(self.Runs(1).Regions(1).Conditions.Functionals.Solver);
             Cores = self.GetCores();
             Solvers = self.GetSolvers();
             CoreSolver = {Cores,Solvers};
+            
+            Dimension_Map = self.GetMergedDimensionMap();
+            
+            Maximum_Data_Sizes = self.GetMaximumDimensionSizes();
+            Replication_Data = self.MakeReplicationData();
+            Model = self.Information.Model_Name;
+            
             for Run_Index = 1:numel(self.Runs);
                 Transient_Matrices{Run_Index} = self.Runs(Run_Index).Regions(1).Conditions.Transients.Matrix;
             end
@@ -1078,6 +1309,7 @@ classdef GECCO < handle
                 self.Runs(Run_Index).Regions(Region_Index).Outputs.Cores = Dependents(5:end,:);
             end
         end
+        
         %%
         function [Transients_Number,Transient_Sizes] = GetTransientSizes(self);
             Count = 0;
@@ -1183,6 +1415,7 @@ classdef GECCO < handle
             self.Runs(1).Regions(1).Conditions.Transients.Load(Filename);
             self.Runs(1).Regions(1).Conditions.Transients.UndealMatrix();
         end
+        
         %% Reset
         function Reset(self,src,event);
             self.Model.Outgassing = []; %cat(3,self.Model.Conditions.Initial.Outgassing);

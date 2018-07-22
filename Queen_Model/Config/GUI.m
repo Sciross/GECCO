@@ -318,7 +318,7 @@ classdef GUI < handle;
                 if ~strcmp(ValidFilepath,"");
                     ValidFilepathWithNC = self.CheckFilenameEndNC(ValidFilepath);
                     self.OutputFilenameUI.String = ValidFilepathWithNC;
-                    self.Gecco.Runs(self.SelectedRun).Information.OutputFilename = ValidFilepathWithNC;
+                    self.Gecco.Runs(self.SelectedRun).Information.Output_Filename = ValidFilepathWithNC;
                     self.OutputFilenameUI.ForegroundColor = self.Colours.black;
                 elseif strcmp(src.String,"");
                     self.SelectiveClear(src,event);
@@ -404,8 +404,10 @@ classdef GUI < handle;
             self.LogMessages = [self.LogMessages,cell(1)];
             self.PertMatrix{end+1} = cell(0,7);
             self.TransMatrix{end+1} = cell(0,5);
-            if nargin==3
+            if nargin>1;
                 self.RebuildTable(src,event);
+            else
+                self.RebuildTable();
             end
         end
         function AddChunkCallback(self,src,event);
@@ -454,7 +456,9 @@ classdef GUI < handle;
             % Then build the table from scratch
 %                 self.RunTableUI.Data = self.BuildRunTable();
                 self.RunTableUI.Data = self.BuildChunkTable();
-                self.UpdatePertTransTable(src,event);
+                if nargin>1;
+                    self.UpdatePertTransTable(src,event);
+                end
 %                 if ~strcmp(src.Tag,"TabChange");
 %                 end
                 % Update the perturbation table data

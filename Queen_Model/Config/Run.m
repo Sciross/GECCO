@@ -45,7 +45,7 @@ classdef Run < handle
         %% Gets available models
         function InstalledModels = GetInstalledModels(self,src,event);
             % Looks for directory contents matching pattern
-            DirectoryContentsModelsFull = dir([self.ModelDirectory,'..\*_Model*']);
+            DirectoryContentsModelsFull = dir([self.ModelDirectory,'../*_Model*']);
             % Concatenates the names from the struct
             InstalledModels = vertcat({DirectoryContentsModelsFull(:).name});
         end
@@ -143,10 +143,49 @@ classdef Run < handle
                 Unmerged_Names{Self_Index} = self(Self_Index).Regions.GetParameterGroupNames();
             end
         end
+        function Merged_Names = MergeParameterGroupNames(self,Unmerged_Names);
+            Names = "";
+            for Region_Index = 1:numel(Unmerged_Names{1});
+                Names = [Names;Unmerged_Names{1}{Region_Index}];
+            end
+            Unique_Names = unique(Names,'stable');
+            Merged_Names = Unique_Names(~strcmp(Unique_Names,""));
+        end
+        function Merged_Names = GetMergedParameterGroupNames(self);            
+            Unmerged_Names = self.GetUnmergedParameterGroupNames();
+            Merged_Names = self.MergeParameterGroupNames(Unmerged_Names);
+        end
+        
         function Unmerged_Names = GetUnmergedParameterNames(self);
             for Self_Index = 1:numel(self);
                 Unmerged_Names{Self_Index} = self(Self_Index).Regions.GetParameterNames();
             end
+        end
+        function Merged_Names = MergeParameterNames(self,Unmerged_Names);
+            % Get maximum size
+            for Region_Index = 1:numel(Unmerged_Names);
+                Sizes(Region_Index) = numel(Unmerged_Names{1}{Region_Index});
+            end
+            Maximum_Group_Number = max(Sizes(:));
+            
+            Names = cell(1,Maximum_Group_Number);
+            for Region_Index = 1:numel(Unmerged_Names{1});
+                for Group_Index = 1:numel(Unmerged_Names{1}{Region_Index});
+                    if isempty(Names{Group_Index});
+                        Names{Group_Index} = "";
+                    end
+                    Names{Group_Index} = [Names{Group_Index};Unmerged_Names{1}{Region_Index}{Group_Index}];
+                end
+            end
+            
+            for Group_Index = 1:numel(Names);
+                Merged_Names{Group_Index} = unique(Names{Group_Index});
+                Merged_Names{Group_Index} = Merged_Names{Group_Index}(~strcmp(Merged_Names{Group_Index},""));
+            end
+        end
+        function Merged_Names = GetMergedParameterNames(self);
+            Unmerged_Names = self.GetUnmergedParameterNames();
+            Merged_Names = self.MergeParameterNames(Unmerged_Names);
         end
         
         function Unmerged_Names = GetUnmergedDataNames(self);
@@ -154,46 +193,202 @@ classdef Run < handle
                 Unmerged_Names{Self_Index} = self(Self_Index).Regions.GetDataNames();
             end
         end
+        function Merged_Names = MergeDataNames(self,Unmerged_Names);
+            Names = "";
+            for Region_Index = 1:numel(Unmerged_Names{1});
+                Names = [Names;Unmerged_Names{1}{Region_Index}];
+            end
+            Merged_Names = unique(Names);
+            Merged_Names = Merged_Names(~strcmp(Merged_Names,""));
+        end
+        function Merged_Names = GetMergedDataNames(self);
+            Unmerged_Names = self.GetUnmergedDataNames();
+            Merged_Names = self.MergeDataNames(Unmerged_Names);
+        end
         
         function Unmerged_Sizes = GetUnmergedDataSizes(self);
             for Self_Index = 1:numel(self);
                 Unmerged_Sizes{Self_Index} = self(Self_Index).Regions.GetDataSizes();
             end
         end
+        function Merged_Sizes = MergeDataSizes(self,Unmerged_Sizes);
+            Current_Map = Unmerged_Sizes{1}{1};
+            for Region_Index = 1:numel(Unmerged_Sizes);
+                if size(Unmerged_Sizes{1}{Region_Index},1)>size(Current_Map,1);
+                    Current_Map = Unmerged_Sizes{Region_Index};
+                end
+            end
+            Merged_Sizes = Current_Map;
+        end
+        function Merged_Sizes = GetMergedDataSizes(self);
+            Unmerged_Sizes = self.GetUnmergedDataSizes();
+            Merged_Sizes = self.MergeDataSizes(Unmerged_Sizes);
+        end
         
         function Cores = GetCores(self);
             for Self_Index = 1:numel(self);
-                Cores{Self_Index} = self.Regions.GetCores();
+                Cores{Self_Index} = self(Self_Index).Regions.GetCores();
             end
         end
         function Solvers = GetSolvers(self);
             for Self_Index = 1:numel(self);
-                Solvers{Self_Index} = self.Regions.GetSolvers();
+                Solvers{Self_Index} = self(Self_Index).Regions.GetSolvers();
             end
         end
+        
+        function Unmerged_Dimension_Maps = GetUnmergedDimensionMaps(self);
+            for Self_Index = 1:numel(self);
+                Unmerged_Dimension_Maps{Self_Index} = self(Self_Index).Regions.GetDimensionMaps();
+            end
+        end
+        function Merged_Dimension_Map = MergeDimensionMaps(self,Unmerged_Dimension_Maps);
+            Merged_Map = containers.Map();
+            for Region_Index = 1:numel(self.Regions);
+                Current_Dimension_Map = Unmerged_Dimension_Maps{1}{Region_Index};
+                Current_Keys = keys(Current_Dimension_Map);
+                Current_Values = values(Current_Dimension_Map);
+                
+                for Key_Index = 1:numel(Current_Keys);
+                    if ~isKey(Merged_Map,Current_Keys{Key_Index});
+                        Merged_Map(Current_Keys{Key_Index}) = Current_Values{Key_Index};
+                    elseif isKey(Merged_Map,Current_Keys{Key_Index});
+                        Current_Sizes = Merged_Map(Current_Keys{Key_Index});
+                        if Current_Values{Key_Index}{2}>Current_Sizes{2};
+                            Merged_Map(Current_Keys{Key_Index}) = Current_Values{Key_Index};
+                        end
+                    end
+                end
+            end
+            Merged_Dimension_Map = Merged_Map;
+        end
+        function Merged_Dimension_Map = GetMergedDimensionMap(self);
+            Unmerged_Dimension_Maps = self.GetUnmergedDimensionMaps();
+            Merged_Dimension_Map = self.MergeDimensionMaps(Unmerged_Dimension_Maps);
+        end
+        
+%         function Sizes = GetSizeOf(self,Type,Group,Name);
+%             if nargin<4;
+%                 Name = Group;
+%                 Group = "";
+%             end
+%             for Self_Index = 1:numel(self);
+%                 Sizes{Self_Index} = self(Self_Index).Regions.GetSizeOf(Type,Group,Name);
+%             end
+%         end
+        
+        function Values = GetDimensionSizes(self);
+            Values(1) = 1;
+            Values(2) = max(self.GetOutputTimestepCount());
+            Values(3) = self.GetMaximumChunkNumber();
+            Values(4) = self.GetMaximumSizeOf("Initials","Conditions");
+            Values(5) = self.GetMaximumSizeOf("Constants","Architecture","Hypsometric_Bin_Midpoints");
+            Values(6) = self.GetMaximumSizeOf("Constants","Seafloor","Core_Depths"); %max(self.GetCoreDepthSize());
+            Values(7) = self.GetMaximumSizeOf("Initials","Outgassing"); %max(self.GetOutgassingSize());
+            Values(8) = self.GetMaximumSizeOf("Presents","Outgassing","Gauss"); %max(self.GetOutgassingGaussianSize());
+        end
+        function Maximum_Chunk_Number = GetMaximumChunkNumber(self);
+            for Run_Index = 1:numel(self);
+                Chunk_Number(Run_Index) = numel(self(Run_Index).Chunks);
+            end
+            Maximum_Chunk_Number = max(Chunk_Number);
+        end
+        function Sizes = GetSizeOf(self,Type,Group,Name);
+            if nargin<4;
+                Name = Group;
+                Group = "";
+            end
+            for Self_Index = 1:numel(self);
+                Sizes(Self_Index) = self(Self_Index).Regions.GetSizeOf(Type,Group,Name);
+            end
+        end
+        function GetCellMaximum(self,Cell);
+            Value = [];
+            for Cell_Index = 1:numel(Cell);
+                if isempty(Value) || Cell{Cell_Index}>Value;
+                    Value = Cell{Cell_Index};
+                end
+            end
+        end
+        function Cell = CellMaximumIterate(self,Cell);
+            while iscell(Cell);
+                for Cell_Index = 1:numel(Cell);
+                    if ~iscell(Cell);
+                        break
+                    elseif iscell(Cell{Cell_Index});
+                        Cell{Cell_Index} = self.CellMaximumIterate(Cell{Cell_Index});
+                    else
+                        Cell = max(Cell{Cell_Index});
+                    end
+                end
+            end
+            
+        end
+        function Maximum_Size = GetMaximumSizeOf(self,Type,Group,Name);
+            if nargin<4;
+                Name = Group;
+                Group = "";
+            end
+            
+            Sizes = self.GetSizeOf(Type,Group,Name);
+            Maximum_Size = self.CellMaximumIterate(Sizes);
+        end
+        
+%         function SeafloorSizes = GetSeafloorSizes(self);
+%             for Self_Index = 1:numel(self);
+%                 SeafloorSizes{Self_Index} = self(Self_Index).Regions.GetSeafloorSizes();
+%             end
+%         end
+%         function CoreDepthSizes = GetCoreDepthSizes(self);
+%             for Self_Index = 1:numel(self);
+%                 CoreDepthSizes{Self_Index} = self(Self_Index).Regions.GetCoreDepthSizes();
+%             end
+%         end
+%         function OutgassingSizes = GetOutgassingSizes(self);
+%             for Self_Index = 1:numel(self);
+%                 OutgassingSizes{Self_Index} = self(Self_Index).Regions.GetOutgassingSizes();
+%             end
+%         end
+%         function OutgassingGaussianSizes = GetOutgassingGaussianSizes(self);
+%         end
+%         function TimestepSizes = GetTimestepSizes(self);
+%         end
+%         function TimestepSizes = GetOutputTimestepSizes(self);
+%         end
         
         %% Save
         function SelfPrepareNetCDF(self);
             File = self.Information.Output_File;
-            Parameter_Group_Names = self.Regions(1).Conditions.GetShallowNames(self.Runs(1).Regions(1).Conditions.Constants);
-            Parameter_Names = self.Regions(1).Conditions.GetDeepNames(self.Runs(1).Regions(1).Conditions.Constants);
-            Maximum_Data_Sizes = self.GetMaximumDimensionSizes();
-            Dimension_Map = self.Regions(1).Conditions.Presents.DimensionMap;
-            Data_Names = properties(self.Regions(1).Outputs);
-            Data_Size_Map = self.Regions(1).Outputs.Data_Size_Map;
-            Replication_Data = self.MakeReplicationData();
+            Parameter_Group_Names = self.GetMergedParameterGroupNames();
+            Parameter_Names = self.GetMergedParameterNames();
+            
+            Data_Names = self.GetMergedDataNames();
+            Data_Size_Map = self.GetMergedDataSizes();
+            
+            Cores = self.GetCores();
+            Solvers = self.GetSolvers();
+            CoreSolver = {Cores,Solvers};
+            
+            Dimension_Map = self.GetMergedDimensionMap();
+            
+            Maximum_Data_Sizes = self.GetDimensionSizes();
+            Replication_Data{1} = self.MakeReplicationData();
             Model = self.Information.Model_Name;
-            Core = char(self.Regions(1).Conditions.Functionals.Core);
-            Solver = char(self.Regions(1).Conditions.Functionals.Solver);
-            CoreSolver = {Core,Solver};
-            for Region_Index = 1:numel(self.Regions);
-                Transient_Matrices{Region_Index} = self.Regions(Region_Index).Conditions.Transients.Matrix;
-            end
-            for Region_Index = 1:numel(self.Regions);
-                Perturbation_Matrices{Region_Index} = self.Regions(Region_Index).Conditions.Perturbations.Matrix;
-            end
+            
+            Transient_Matrices = self.GetTransientMatrices();
+            Perturbation_Matrices = self.GetPerturbationMatrices();            
             
             GECCO.PrepareNetCDF(File,Model,Data_Names,Maximum_Data_Sizes,Data_Size_Map,Parameter_Group_Names,Parameter_Names,Dimension_Map,Transient_Matrices,Perturbation_Matrices,Replication_Data,CoreSolver);
+        end
+       
+        function Transient_Matrices = GetTransientMatrices(self);
+            for Run_Index = 1:numel(self);
+                Transient_Matrices{Run_Index} = self(Run_Index).Regions(1).Conditions.Transients.Matrix;
+            end
+        end
+        function Perturbation_Matrices = GetPerturbationMatrices(self);
+            for Run_Index = 1:numel(self);
+                Perturbation_Matrices{Run_Index} = self(Run_Index).Regions(1).Conditions.Perturbations.Matrix;
+            end
         end
         
         %% Load

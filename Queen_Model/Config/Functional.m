@@ -29,7 +29,7 @@ classdef Functional < matlab.mixin.Copyable
         function AvailableCores = GetAvailableCores(self,src,event);
             % Once an option has been selected
             % Looks for directory contents matching pattern
-            AvailableCoresStruct = dir([self.ModelDirectory,'Core\**\*.m']);
+            AvailableCoresStruct = dir([self.ModelDirectory,'Core/**/*.m']);
             AvailableCores = strings(size(AvailableCoresStruct,1),1);
             for CoreIndex = 1:numel(AvailableCores);
                 AvailableCores(CoreIndex) = strrep(string(AvailableCoresStruct(CoreIndex).name),".m","");
