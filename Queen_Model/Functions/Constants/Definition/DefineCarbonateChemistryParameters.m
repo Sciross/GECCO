@@ -16,7 +16,11 @@ function Carbonate_Chemistry = DefineCarbonateChemistryParameters(Carbonate_Chem
 
     % Run Functions for Carbonate Chemistry
     % Calculate carbonate chemistry constants and their correction
-    Temp = load('./../Resources/Coefficients.mat');
+    if ispc;
+        Temp = load('./../Resources/Coefficients.mat');
+    elseif isunix;        
+        Temp = load('/home/rw12g11/Queen_Model/Resources/Coefficients.mat');
+    end
     Carbonate_Chemistry.k0_Matrix = Temp.k0;
     Carbonate_Chemistry.k1_Matrix = Temp.k1;
     Carbonate_Chemistry.k2_Matrix = Temp.k2;

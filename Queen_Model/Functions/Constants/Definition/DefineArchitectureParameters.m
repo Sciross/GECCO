@@ -9,8 +9,13 @@ function Architecture = DefineArchitectureParameters(Architecture);
     Architecture.Ocean_Volumes = Architecture.Ocean_Area.*Architecture.Ocean_Depths;
         
     Architecture.Mixing_Coefficient = 5; %m/yr
-
-    load('./../Resources/Hypsometry.mat');
+    
+    if ispc;
+        load('./../Resources/Hypsometry.mat');
+    elseif isunix;
+        load('/home/rw12g11/Queen_Model/Resources/Hypsometry.mat');
+    end
+        
     [Gradient,YIntercept] = PiecewiseLinearFit(Hypsometric_Bin_Midpoints,Cumulative_Hypsometry);
     Architecture.Hypsometric_Interpolation_Matrix = [Gradient,YIntercept];
     Architecture.Hypsometry = Hypsometry;
