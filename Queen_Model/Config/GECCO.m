@@ -238,10 +238,14 @@ classdef GECCO < handle
             Run_Stuff = Replication_Data{1}{1};
             Initial_Stuff = Replication_Data{1}{2};
             
+            for Run_Index = 1:numel(Replication_Data);
+                Run_Stuff_Sizes(Run_Index) = size(Replication_Data{Run_Index}{1},1);
+            end
+            
             FileID = netcdf.open(Filename,'WRITE');
             netcdf.reDef(FileID);
             
-            Dim_r1 = {'c_1',size(Run_Stuff,1)};
+            Dim_r1 = {'c_1',max(Run_Stuff_Sizes)};
             Dim_r2 = {'c_2',size(Run_Stuff,2)};
             
             netcdf.defDim(FileID,Dim_r1{1},Dim_r1{2});
@@ -288,7 +292,7 @@ classdef GECCO < handle
                 % Specify start and stride
                 Region_Index = 1;
                 Start = [0,0,Region_Index-1,Run_Index-1];
-                Count = [1,numel(Replication_Data{Run_Index}{1}),1,1];
+                Count = [size(Replication_Data{Run_Index}{1},1),size(Replication_Data{Run_Index}{1},2),1,1];
                 Stride = [1,1,1,1];
                 
                 netcdf.putVar(RepGrpID,Run_MatrixID,Start,Count,Stride,Replication_Data{Run_Index}{1});
@@ -795,6 +799,10 @@ classdef GECCO < handle
                     
                     % Preallocate output arrays
                     DataChunks = cell(1:numel(self.Runs(Run_Index).Chunks));
+                    DataRun = cell(0);
+                    DependentRun = cell(0);
+                    ParameterRun = cell(0);
+                    PICRun = cell(0);
                     
                     % Loop for each chunk
                     for Chunk_Index = 1:numel(self.Runs(Run_Index).Chunks);
@@ -866,7 +874,7 @@ classdef GECCO < handle
 %                 profile off;
             end
         end
-        function RunModel_SingleRun(self,Run_Index,Gui);
+        function RunModelSingleRun(self,Run_Index,Gui);
             self.Information.SortOutFilepath();
 %             for Run_Index = 1:numel(self.Runs);
                 self.Runs(Run_Index).Information.SortOutFilepath();
@@ -1020,10 +1028,10 @@ classdef GECCO < handle
             
             % Create tasks
             for Run_Index = 1:numel(self.Runs);
-                Task{Run_Index} = createTask(Job,@self.RunModel_SingleRun,0,{self,Run_Index});
+                Task{Run_Index} = createTask(Job,@self.RunModelSingleRun,0,{Run_Index});
             end
             
-            submit(job);
+            submit(Job);
             
         end
         

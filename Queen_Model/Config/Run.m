@@ -83,8 +83,8 @@ classdef Run < handle
                 self.Chunks = [self.Chunks,ChunkIn];
             else
                 if numel(self.Chunks)>0;
-                    Length = self.Chunks(end).TimeIn(2)-self.Chunks(end).TimeIn(1);
-                    self.Chunks = [self.Chunks,Chunk([self.Chunks(end).TimeIn(2),self.Chunks(end).TimeIn(2)+Length,self.Chunks(end).TimeIn(3)],[self.Chunks(end).TimeIn(2),self.Chunks(end).TimeIn(2)+Length,self.Chunks(end).TimeOut(3)])];
+                    Length = self.Chunks(end).Time_In(2)-self.Chunks(end).Time_In(1);
+                    self.Chunks = [self.Chunks,Chunk([self.Chunks(end).Time_In(2),self.Chunks(end).Time_In(2)+Length,self.Chunks(end).Time_In(3)],[self.Chunks(end).Time_In(2),self.Chunks(end).Time_In(2)+Length,self.Chunks(end).Time_Out(3)])];
                 else
                     self.Chunks = [self.Chunks,Chunk()];
                 end
@@ -122,8 +122,8 @@ classdef Run < handle
                     Flag = 1;
                     break;
                 else
-                    TimeOutEnd = self.Chunks(ChunkIndex).TimeOut(2);
-                    TimeOutStart = self.Chunks(ChunkIndex+1).TimeOut(1);
+                    TimeOutEnd = self.Chunks(ChunkIndex).Time_Out(2);
+                    TimeOutStart = self.Chunks(ChunkIndex+1).Time_Out(1);
                     
                     if TimeOutStart~=TimeOutEnd;
                         Flag = 0;
