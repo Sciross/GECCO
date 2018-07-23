@@ -874,7 +874,7 @@ classdef GECCO < handle
 %                 profile off;
             end
         end
-        function RunModelSingleRun(self,Run_Index,Gui);
+        function self = RunModelSingleRun(self,Run_Index,Gui);
             self.Information.SortOutFilepath();
 %             for Run_Index = 1:numel(self.Runs);
                 self.Runs(Run_Index).Information.SortOutFilepath();
@@ -1019,16 +1019,19 @@ classdef GECCO < handle
 %                 profile off;
             end
         end
-        function RunModelOnIridis(self);
+        function Job = RunModelOnIridis(self);
             % Create a cluster object
             Cluster = parcluster;
             % Create a job
             Job = createJob(Cluster);
+            Additional_Paths = strsplit(genpath('~/Queen_Model/'),':');
+            Job.AdditionalPaths = Additional_Paths(~cellfun('isempty',Additional_Paths));
+            
             % Manipulate self here
             
             % Create tasks
             for Run_Index = 1:numel(self.Runs);
-                Task{Run_Index} = createTask(Job,@self.RunModelSingleRun,0,{Run_Index});
+                Task{Run_Index} = createTask(Job,@self.RunModelSingleRun,1,{Run_Index});
             end
             
             submit(Job);
