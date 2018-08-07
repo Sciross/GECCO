@@ -1808,7 +1808,7 @@ classdef GUI < handle;
                 self.Gecco.SaveToSameFileFlag = event.Source.Value;
             elseif strcmp(src.Tag,"SaveByRunsTickbox");
                 self.Gecco.SaveToRunFilesFlag = event.Source.Value;
-            elseif strcmp(src.Tag,"SplashShouldSaveTickboxUI");
+            elseif strcmp(src.Tag,"ShouldSaveTickbox");
                 self.Gecco.ShouldSaveFlag = event.Source.Value;
             else
                 self.UpdateLogBox("Something went wrong setting a save flag");

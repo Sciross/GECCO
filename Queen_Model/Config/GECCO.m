@@ -830,7 +830,7 @@ classdef GECCO < handle
                         DataRun{Chunk_Index} = DataChunks{Chunk_Index}{1};
                         DependentRun{Chunk_Index} = DataChunks{Chunk_Index}{2};
                         ParameterRun{Chunk_Index} = DataChunks{Chunk_Index}{3};
-                        PICRun{Chunk_Index} = DataChunks{Chunk_Index}{4};
+                        PICRun{Chunk_Index} = DataChunks{Chunk_Index}{5};
                     end
                     
                     % Assign to model object
