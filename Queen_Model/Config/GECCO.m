@@ -747,7 +747,7 @@ classdef GECCO < handle
             self.ValidatedFlag = self.ValidatedFlag && all(RunsValidatedFlags);
             
             if self.ValidatedFlag;
-%                 profile on;
+                profile on;
                 if self.UsedGUIFlag;
                     Gui.ColourBox.BackgroundColor = [1,1,0.5];
                     Gui.UpdateLogBox("Starting model runs...");
@@ -786,84 +786,88 @@ classdef GECCO < handle
                     end
                 end
                 
-%                 try
-                % Loop for runs
-                for Run_Index = 1:numel(self.Runs);
-                    DateTime(1) = datetime('now');
-                    if self.UsedGUIFlag;
-                        Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," starting "," @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
-                    end
-                    
-                    % Keep a copy of initial
-                    Initials_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions;
-                    
-                    % Preallocate output arrays
-                    DataChunks = cell(1:numel(self.Runs(Run_Index).Chunks));
-                    DataRun = cell(0);
-                    DependentRun = cell(0);
-                    ParameterRun = cell(0);
-                    PICRun = cell(0);
-                    
-                    % Loop for each chunk
-                    for Chunk_Index = 1:numel(self.Runs(Run_Index).Chunks);
-                        % Apply the relevant perturbations on a per model-run basis
-                        self.Runs(Run_Index).Regions(1).Conditions.Perturb(self.Runs(Run_Index).Regions(1).Conditions.Perturbations.Matrix,Chunk_Index);
-                        
-                        % Create anonymous function
-                        ODEFunc = eval(strcat("@(t,y,y_Sub,y_Meta,Chunk)",self.Runs(Run_Index).Regions(1).Conditions.Functionals.Core,"(t,y,y_Sub,y_Meta,Chunk,self.Runs(Run_Index).Regions(1))"));
-                        
-                        % Run the solver
-                        SolverFunction = str2func(self.Runs(Run_Index).Regions(1).Conditions.Functionals.Solver);
-                        DataChunks{Chunk_Index} = SolverFunction(ODEFunc,self.Runs(Run_Index),Chunk_Index);
-                        
-                        % Reset the initial conditions
-                        if Run_Index~=numel(self.Runs);
-                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
-                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
-                        else
-                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
-                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
+                try
+                    % Loop for runs
+                    for Run_Index = 1:numel(self.Runs);
+                        DateTime(1) = datetime('now');
+                        if self.UsedGUIFlag;
+                            Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," starting "," @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
                         end
-                    end
-                    
-                    for Chunk_Index = 1:numel(DataChunks);
-                        DataRun{Chunk_Index} = DataChunks{Chunk_Index}{1};
-                        DependentRun{Chunk_Index} = DataChunks{Chunk_Index}{2};
-                        ParameterRun{Chunk_Index} = DataChunks{Chunk_Index}{3};
-                        PICRun{Chunk_Index} = DataChunks{Chunk_Index}{5};
-                    end
-                    
-                    % Assign to model object
-                    self.UnpackData(Run_Index,1,horzcat(DataRun{:}),horzcat(DependentRun{:}));
-                    self.Runs(Run_Index).Regions(1).Conditions.AssignConstants(horzcat(ParameterRun{:}));
-                    self.Runs(Run_Index).Regions(1).Conditions.Presents.Carbon.PIC_Burial = horzcat(PICRun{:});
-                    
-                    if self.UsedGUIFlag;
-                        % Display when run is complete
-                        Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," complete @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
-                    end
-                    
-                    % Save data to one file when each run is done
-                    if self.ShouldSaveFlag;
-                        if self.SaveToSameFileFlag;
-                            self.Runs(Run_Index).Regions(1).Save(self.Information,1,Run_Index);
-                        end
-                        if self.SaveToRunFilesFlag;
-                            self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information,1,1);
-                        end
-                        if self.SaveToRegionFilesFlag;
-                            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
-                                self.Runs(Run_Index).Regions(Region_Index).Save(self.Runs(Run_Index).Regions(Region_Index).Information,Region_Index,Run_Index);
+                        
+                        % Keep a copy of initial
+                        Initials_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions;
+                        
+                        % Preallocate output arrays
+                        DataChunks = cell(1:numel(self.Runs(Run_Index).Chunks));
+                        DataRun = cell(0);
+                        DependentRun = cell(0);
+                        ParameterRun = cell(0);
+                        PICRun = cell(0);
+                        
+                        % Loop for each chunk
+                        for Chunk_Index = 1:numel(self.Runs(Run_Index).Chunks);
+                            % Apply the relevant perturbations on a per model-run basis
+                            self.Runs(Run_Index).Regions(1).Conditions.Perturb(self.Runs(Run_Index).Regions(1).Conditions.Perturbations.Matrix,Chunk_Index);
+                            
+                            % Create anonymous function
+                            ODEFunc = eval(strcat("@(t,y,y_Sub,y_Meta,Chunk)",self.Runs(Run_Index).Regions(1).Conditions.Functionals.Core,"(t,y,y_Sub,y_Meta,Chunk,self.Runs(Run_Index).Regions(1))"));
+                            
+                            % Run the solver
+                            SolverFunction = str2func(self.Runs(Run_Index).Regions(1).Conditions.Functionals.Solver);
+                            DataChunks{Chunk_Index} = SolverFunction(ODEFunc,self.Runs(Run_Index),Chunk_Index);
+                            
+                            % Reset the initial conditions
+                            if Run_Index~=numel(self.Runs);
+                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
+                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
+                            else
+                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
+                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
                             end
                         end
+                        
+                        for Chunk_Index = 1:numel(DataChunks);
+                            DataRun{Chunk_Index} = DataChunks{Chunk_Index}{1};
+                            DependentRun{Chunk_Index} = DataChunks{Chunk_Index}{2};
+                            ParameterRun{Chunk_Index} = DataChunks{Chunk_Index}{3};
+                            PICRun{Chunk_Index} = DataChunks{Chunk_Index}{5};
+                        end
+                        
+                        % Assign to model object
+                        self.UnpackData(Run_Index,1,horzcat(DataRun{:}),horzcat(DependentRun{:}));
+                        self.Runs(Run_Index).Regions(1).Conditions.AssignConstants(horzcat(ParameterRun{:}));
+                        self.Runs(Run_Index).Regions(1).Conditions.Presents.Carbon.PIC_Burial = horzcat(PICRun{:});
+                        
+                        if self.UsedGUIFlag;
+                            % Display when run is complete
+                            Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," complete @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
+                        end
+                        
+                        % Save data to one file when each run is done
+                        if self.ShouldSaveFlag;
+                            if self.SaveToSameFileFlag;
+                                self.Runs(Run_Index).Regions(1).Save(self.Information,1,Run_Index);
+                            end
+                            if self.SaveToRunFilesFlag;
+                                self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information,1,1);
+                            end
+                            if self.SaveToRegionFilesFlag;
+                                for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                                    self.Runs(Run_Index).Regions(Region_Index).Save(self.Runs(Run_Index).Regions(Region_Index).Information,Region_Index,Run_Index);
+                                end
+                            end
+                        end
+                        
+                        % Email
+                        sendtheemail('ross.whiteford@soton.ac.uk','Model Run Complete',['Your model run finished at ',char(datetime('now','Format','HH:mm:ss'))])
                     end
-                                        
-                    % Email
-%                     sendtheemail('ross.whiteford@soton.ac.uk','Model Run Complete',['Your model run saving to ',self.OutputFilepath,' finished at ',char(datetime('now','Format','HH:mm:ss'))])
+                catch ME
+                    if self.UsedGUIFlag;
+                        Gui.UpdateLogBox('Error!');
+                        profile off
+                        return
+                    end
                 end
-%                 catch ME
-%                     self.UpdateLogBox('Error!');
-%                 end
                   
                 % Print to log box
                 if self.UsedGUIFlag;
@@ -871,7 +875,7 @@ classdef GECCO < handle
                     Gui.ColourBox.BackgroundColor = [0,0.5,0.3];
                 end
 
-%                 profile off;
+                profile off;
             end
         end
         function self = RunModelSingleRun(self,Run_Index,Gui);
