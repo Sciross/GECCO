@@ -161,8 +161,8 @@ classdef GUI < handle;
         end
         
         %% Filepath Callbacks
-        % Open browse window for filepath
         function SetOutputFilepath(self,src,event);
+        % Open browse window for filepath
             if isempty(self.OutputFilepathUI.String);
                 OutputFilepath = uigetdir('./../../../Results');
             else
@@ -173,8 +173,8 @@ classdef GUI < handle;
                 self.Gecco.Information.Output_Filepath = OutputFilepath;
             end
         end
-        % Reads in a file and sets the attributes
         function Input_File = GetInputFile(self,src,event);
+        % Reads in a file and sets the attributes
             if strcmp(self.SplashInputFileUI.String,"Input File");
                 [InputFilename,InputFilepath] = uigetfile('*.nc','DefaultName','./../../../Results/');
             else
@@ -199,8 +199,8 @@ classdef GUI < handle;
             self.SetOutputFilename(src,event);
             self.CheckFileExists(src,event);
         end
-        % Check file exists and produce relevant output
         function CheckFileExists(self,src,event);
+        % Check file exists and produce relevant output
             if ~isempty(self.OutputFilepathUI.String);
 %                 FullFile = [self.OutputFilepathUI.String,'\',self.OutputFilenameUI.String];
 %                 Exists = exist(FullFile,'file');
@@ -233,7 +233,6 @@ classdef GUI < handle;
         function SetOutputFilename(self,src,event);
             self.Gecco.Information.Output_Filename = src.String;
         end
-        
         
         function File = GetFilepath(self,src,event);
             if strcmp(src.Tag,"SplashInputFileBrowseButton") || strcmp(src.Tag,"RunLoadButton");
@@ -361,14 +360,14 @@ classdef GUI < handle;
         
         
         %% Model Callbacks
-        % Changes path to correct model
         function ChangeModelCallback(self,src,event);
+        % Changes path to correct model
            self.RemoveModelFromPath(src,event);
            self.AddModelToPath(src,event);
            self.GetAvailableCores(src,event);
         end
-        % Gets available models
         function GetInstalledModels(self,src,event);
+        % Gets available models
             % Looks for directory contents matching pattern
             DirectoryContentsModelsFull = dir([self.ModelDirectory,'../*_Model*']);
             % Concatenates the names from the struct
@@ -376,8 +375,8 @@ classdef GUI < handle;
             % Sets the appropriate string
             src.String = self.InstalledModels;
         end
-        % Gets available cores
         function GetAvailableCores(self,src,event);
+        % Gets available cores
             % Once an option has been selected
             if ~isempty(self.CoreUI);
                 % Looks for directory contents matching pattern
@@ -447,7 +446,7 @@ classdef GUI < handle;
             self.RunIndices = event.Indices;
         end
         function Chunk_Table = BuildChunkTable(self,src,event);
-            for Chunk_Index = 1:numel(self.Gecco.Runs(self.SelectedRun).Chunks);;
+            for Chunk_Index = 1:numel(self.Gecco.Runs(self.SelectedRun).Chunks);
                 Chunk_Table(Chunk_Index,1:3) = self.Gecco.Runs(self.SelectedRun).Chunks(Chunk_Index).Time_In;
                 Chunk_Table(Chunk_Index,4:6) = self.Gecco.Runs(self.SelectedRun).Chunks(Chunk_Index).Time_Out;
             end
@@ -613,6 +612,11 @@ classdef GUI < handle;
             end
         end
         function LoadCondFinal(self,src,event);
+            for Run_Index = 1:numel(self.Gecco.Runs);
+                Region_Index = 1;
+                self.Gecco.Runs(Run_Index).Regions(Region_Index).Conditions.SetInitialMaxOutgassing(self.Gecco.Runs(Run_Index).Chunks.Time_Out(2));
+            end
+            
             File = self.Gecco.Information.Input_File;
             if ~strcmp(File,"");
                 self.Gecco.Runs(self.SelectedRun).Regions.Conditions.(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value}).LoadFinal(File);
@@ -622,7 +626,6 @@ classdef GUI < handle;
         end
 
         %% Initial Callbacks
-        % Updates the constant table definition
         function UpdateInitialTable(self,src,event);
             % On cell change update the 
             Table = horzcat(self.Gecco.Runs(1).Regions(1).Conditions.Initials(1:end).(src.String{src.Value}));
@@ -688,8 +691,8 @@ classdef GUI < handle;
         end
         
         %% Constant Table Callbacks
-        % Updates the constant table definition
         function UpdateConstTable(self,src,event);
+        % Updates the constant table definition
             % On cell change update the table
             for Run_Index = 1:numel(self.Gecco.Runs(1).Regions(1).Conditions);
                 TableData = self.GetConstTableData();
@@ -717,9 +720,9 @@ classdef GUI < handle;
             self.ConstSelectorUI.Value = 1;
             self.UpdateConstTable();
         end
+        function ConstTableEditCallback(self,src,event);
         % Makes changes to the original constants ###Will fail when horzcat
         % stacks things greater than size 1 in the second dimension
-        function ConstTableEditCallback(self,src,event);
             Parameter = self.ConstSelectorUI.String{self.ConstSelectorUI.Value};
             Split_Parameter = strsplit(Parameter,'.');
             if numel(Split_Parameter)==1;
@@ -872,8 +875,8 @@ classdef GUI < handle;
         end
         
         %% Perturbation Callbacks
-        % Saves the selected row
         function UpdateSelectedPert(self,src,event);
+        % Saves the selected row
             if ~isempty(event.Indices);
                 self.SelectedPert = event.Indices(1);
             end
@@ -1021,8 +1024,8 @@ classdef GUI < handle;
         end
         
         %% Transients Table Callbacks
-        % Adds a transient
         function AddTransient(self,src,event);
+        % Adds a transient
             self.TransMatrix{self.SelectedRun} = [self.TransMatrix{self.SelectedRun};cell(1,6)];
             self.UpdateTransientTable(src,event);
         end
@@ -1179,8 +1182,8 @@ classdef GUI < handle;
         end
         
         %% Finalise
-        % What to do just before the model runs
         function Finalise(self);
+        % What to do just before the model runs
             for RunIndex = 1:numel(self.Runs);
                 for ChunkIndex = 1:numel(self.Runs(RunIndex).Chunks);
                     self.Runs(RunIndex).Chunks(ChunkIndex).Perturbations = [];
@@ -1769,15 +1772,22 @@ classdef GUI < handle;
                 ylabel({'Snow Line','(m)'});
                 
                 subplot(self.s{4});
-                p{4} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Conditions.Presents.Carbon.PIC_Burial(1,:),'Color',self.Colours.cyan);
+                p{4} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.pH(1,:),'Color',self.Colours.red/2);
                 hold on
-                p{5} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Conditions.Presents.Carbon.PIC_Burial(2,:,self.PlotRunSelectorUI.Value),'Color',self.Colours.blue);
+                p{5} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.pH(2,:),'Color',self.Colours.red);
+                hold off
+                ylabel({'pH','(Units)'});
+                
+                subplot(self.s{5});
+                p{6} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Conditions.Presents.Carbon.PIC_Pelagic_Burial(1,:),'Color',self.Colours.cyan);
+                hold on
+                p{7} = plot(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time,self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Conditions.Presents.Carbon.PIC_Pelagic_Burial(2,:,self.PlotRunSelectorUI.Value),'Color',self.Colours.blue);
                 hold off
                 ylabel({'PIC Burial','(fraction)'});
                 ylim([0,1]);
                 
-                set([self.s{1:3}],'XTick',[]);
-                linkaxes([self.s{1:4}],'x');
+                set([self.s{1:4}],'XTick',[]);
+                linkaxes([self.s{1:5}],'x');
                 
                 xlabel('Time (yr)');
                 xlim([0,max(self.Gecco.Runs(self.PlotRunSelectorUI.Value).Regions(1).Outputs.Time)]);
@@ -1836,8 +1846,8 @@ classdef GUI < handle;
                 uicontrol(src);
             end
         end
-        % Function to switch plot page onwards
         function PlotRight(self,src,event);
+        % Function to switch plot page onwards
             % Wrap if at final page
             if self.SubplotIndex==4;
                 self.SubplotIndex=1;
@@ -1846,8 +1856,8 @@ classdef GUI < handle;
             end
             self.SelectPlot;
         end
-        % Function to switch plot page backwards
         function PlotLeft(self,src,event);
+        % Function to switch plot page backwards
             % Wrap if at first page
             if self.SubplotIndex==1;
                 self.SubplotIndex=4;
@@ -1856,9 +1866,9 @@ classdef GUI < handle;
             end
             self.SelectPlot;
         end
-        % Creates the right number of subplots for the page
         function RecreateSubplots(self,src,event);
-            if self.SubplotIndex == 1 || self.SubplotIndex==2;
+        % Creates the right number of subplots for the page
+            if self.SubplotIndex == 1 || self.SubplotIndex==2 || self.SubplotIndex==3;
                 self.s = cell(1,5);
                 for n = 1:5;
                     self.s{n} = subplot(5,1,n,'Parent',self.PlotTabHandle);

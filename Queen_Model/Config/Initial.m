@@ -19,6 +19,9 @@ classdef Initial < matlab.mixin.Copyable
     end
     properties (Hidden=true)
         Conditions
+        Outgassing_End
+        Outgassing_Maximum
+        Time_End
     end
     methods(Static)
         function Retrieved_Data = LoadIndividualFull(Filename,Individual,Indices,Count);
@@ -129,6 +132,30 @@ classdef Initial < matlab.mixin.Copyable
                                self.Sea_Level; %17
                                self.Snow_Line]; %18
         end
+        function Outgassing_End = CalculateOutgassingEnd(self,Filename);
+            FileID = netcdf.open(Filename,'NOWRITE');
+            ParamGrpID = netcdf.inqNcid(FileID,'Parameters');
+            ParamSubGrpID = netcdf.inqNcid(ParamGrpID,'Outgassing');
+            VarID = netcdf.inqVarID(ParamSubGrpID,'Temporal_Resolution');
+            Outgassing_Resolution = netcdf.getVar(ParamSubGrpID,VarID);
+            netcdf.close(FileID);
+            
+            % Need end time of model run and outgassing resolution
+            Time_End = self.LoadIndividualFull(Filename,'Time',{":","end",":",":"});
+            
+            Outgassing_End = Time_End./Outgassing_Resolution;
+        end
+        function SetOutgassingEnd(self,Filename);
+            self.Outgassing_End = self.CalculateOutgassingEnd(Filename);
+        end
+        function PadOutgassing(self);
+            if self.Outgassing_Maximum-numel(self.Outgassing((self.Outgassing_End+1):end))>=0;
+                self.Outgassing = padarray(self.Outgassing((self.Outgassing_End+1):end),self.Outgassing_Maximum-numel(self.Outgassing((self.Outgassing_End+1):end)),'post');
+            else
+                self.Outgassing = self.Outgassing((numel(self.Outgassing)-self.Outgassing_Maximum+1):end);
+            end
+        end
+        
         function Load(self,Filename);
             Properties = properties(self);
             for Properties_Index = 1:numel(Properties);
@@ -143,6 +170,9 @@ classdef Initial < matlab.mixin.Copyable
             for Properties_Index = 1:numel(Properties);
                 self.(Properties{Properties_Index}) = self.LoadIndividualFull(Filename,Properties{Properties_Index},{":","end",":",":"});
             end
+            self.SetOutgassingEnd(Filename);
+            self.PadOutgassing();
+            
         end
         
     end

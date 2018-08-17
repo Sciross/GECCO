@@ -729,12 +729,19 @@ classdef GECCO < handle
             self.Information.SortOutFilepath();
             for Run_Index = 1:numel(self.Runs);
                 self.Runs(Run_Index).Information.SortOutFilepath();
-            end
-            for Run_Index = 1:numel(self.Runs);
                 for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
                     self.Runs(Run_Index).Regions(Region_Index).Information.SortOutFilepath();
                 end
             end
+            
+            for Run_Index = 1:numel(self.Runs);
+                for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                    if size(self.Runs(Run_Index).Regions(Region_Index).Conditions.Presents.Carbon.PIC_Pelagic_Burial,2)>1;
+                        self.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial = self.Runs(Run_Index).Regions(Region_Index).Conditions.Presents.Carbon.PIC_Pelagic_Burial(:,end);
+                    end
+                end
+            end
+            
             if self.UsedGUIFlag;
                 self.Validate(Gui);
             else
@@ -786,7 +793,7 @@ classdef GECCO < handle
                     end
                 end
                 
-                try
+%                 try
                     % Loop for runs
                     for Run_Index = 1:numel(self.Runs);
                         DateTime(1) = datetime('now');
@@ -814,15 +821,19 @@ classdef GECCO < handle
                             
                             % Run the solver
                             SolverFunction = str2func(self.Runs(Run_Index).Regions(1).Conditions.Functionals.Solver);
-                            DataChunks{Chunk_Index} = SolverFunction(ODEFunc,self.Runs(Run_Index),Chunk_Index);
+                            [DataChunks{Chunk_Index},Chunk_Flag] = SolverFunction(ODEFunc,self.Runs(Run_Index),Chunk_Index);
                             
                             % Reset the initial conditions
-                            if Run_Index~=numel(self.Runs);
+                            if Run_Index~=numel(self.Runs) & Chunk_Flag;
                                 self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
                                 self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
                             else
                                 self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
                                 self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
+                            end
+                            
+                            if ~Chunk_Flag;
+                                break
                             end
                         end
                         
@@ -830,13 +841,13 @@ classdef GECCO < handle
                             DataRun{Chunk_Index} = DataChunks{Chunk_Index}{1};
                             DependentRun{Chunk_Index} = DataChunks{Chunk_Index}{2};
                             ParameterRun{Chunk_Index} = DataChunks{Chunk_Index}{3};
-                            PICRun{Chunk_Index} = DataChunks{Chunk_Index}{5};
+                            PICRun{Chunk_Index} = DataChunks{Chunk_Index}{4};
                         end
                         
                         % Assign to model object
                         self.UnpackData(Run_Index,1,horzcat(DataRun{:}),horzcat(DependentRun{:}));
                         self.Runs(Run_Index).Regions(1).Conditions.AssignConstants(horzcat(ParameterRun{:}));
-                        self.Runs(Run_Index).Regions(1).Conditions.Presents.Carbon.PIC_Burial = horzcat(PICRun{:});
+                        self.Runs(Run_Index).Regions(1).Conditions.Presents.Carbon.PIC_Pelagic_Burial = horzcat(PICRun{:});
                         
                         if self.UsedGUIFlag;
                             % Display when run is complete
@@ -861,13 +872,13 @@ classdef GECCO < handle
                         % Email
                         sendtheemail('ross.whiteford@soton.ac.uk','Model Run Complete',['Your model run finished at ',char(datetime('now','Format','HH:mm:ss'))])
                     end
-                catch ME
-                    if self.UsedGUIFlag;
-                        Gui.UpdateLogBox('Error!');
-                        profile off
-                        return
-                    end
-                end
+%                 catch ME
+%                     if self.UsedGUIFlag;
+%                         Gui.UpdateLogBox('Error!');
+%                         profile off
+%                         return
+%                     end
+%                 end
                   
                 % Print to log box
                 if self.UsedGUIFlag;
@@ -1320,7 +1331,8 @@ classdef GECCO < handle
             self.Runs(Run_Index).Regions(Region_Index).Outputs.Lysocline = Dependents(2,:);
             self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Total = Dependents(3,:);
             self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Exposed = Dependents(4,:);
-            if size(Dependents,1)>4;
+            self.Runs(Run_Index).Regions(Region_Index).Outputs.pH = Dependents(5:6,:);
+            if size(Dependents,1)>6;
                 self.Runs(Run_Index).Regions(Region_Index).Outputs.Cores = Dependents(5:end,:);
             end
         end
@@ -1370,8 +1382,7 @@ classdef GECCO < handle
         %%
         function ParseGUIPerturbations(self,Perturbations);
             
-        end
-        
+        end        
         function ParseGUITransients(self,Transients);
             
         end

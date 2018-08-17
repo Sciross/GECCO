@@ -241,6 +241,9 @@ classdef Condition < matlab.mixin.Copyable
         function Max_Outgassing = GetMaxOutgassing(self,Run_End);
             Max_Outgassing = ceil(((self.Constants.Outgassing.Mean_Lag)+(3.*self.Constants.Outgassing.Spread)+(Run_End))./self.Constants.Outgassing.Temporal_Resolution);
         end
+        function SetInitialMaxOutgassing(self,Run_End);
+            self.Initials.Outgassing_Maximum = self.GetMaxOutgassing(Run_End);
+        end
         
         %%
         function AssignConstants(self,Transients_Data);

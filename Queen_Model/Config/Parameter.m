@@ -63,7 +63,7 @@ classdef Parameter < matlab.mixin.Copyable
                 % Assign constant, special cases covered by _VAL
                 if strcmp(Parameter_Type,"string") || strcmp(Parameter_Type,"char");
                     Dimension2 = {'u_2'};
-                elseif strcmp(Keys{Parameter},'Carbon.PIC_Burial');
+                elseif strcmp(Keys{Parameter},'Carbon.PIC_Pelagic_Burial');
                     Dimension2 = {'t'};
                 elseif ParameterSize{Parameter}(2)==1;
                     Dimension2 = {'k'};
