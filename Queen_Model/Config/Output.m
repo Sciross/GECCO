@@ -20,6 +20,7 @@ classdef Output < matlab.mixin.Copyable & ParameterLoad
         Lysocline
         Carbonate_Total
         Carbonate_Exposed
+        pH
         Cores
     end
     properties (Hidden=true)
@@ -27,7 +28,7 @@ classdef Output < matlab.mixin.Copyable & ParameterLoad
     end
     methods
         function self = Output();
-            Sizes = [1,1,2,1,2,2,1,2,1,1,1,1,1,1,1,NaN,NaN,1,1,1,NaN];
+            Sizes = [1,1,2,1,2,2,1,2,1,1,1,1,1,1,1,NaN,NaN,1,1,1,2,NaN];
             self.Data_Size_Map = containers.Map(properties(self),Sizes);
         end
         function StartSave(self,Filename,DimensionSizes,DimensionMap);

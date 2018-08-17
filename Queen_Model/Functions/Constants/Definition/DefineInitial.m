@@ -26,7 +26,7 @@ Initial.Sea_Level = 0; %m
 
 Initial.Snow_Line = 500; %m
 
-Initial.Seafloor = [zeros(500,1);linspace(0,8e19,551)';zeros(2001-(551+500),1)];
+Initial.Seafloor = [zeros(500,1);linspace(0,4e18,551)';zeros(2001-(551+500),1)];
 Initial.Outgassing = [];
 
 end

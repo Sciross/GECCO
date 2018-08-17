@@ -9,6 +9,11 @@ function Phosphate = DefinePhosphateParameters(Phosphate);
     SurfaceRemin = 0.95; %fraction
     Burial = 0.002; %fraction
     DeepRemin = 1-(SurfaceRemin+Burial); %fraction
+    
+    Neritic_Surface_Remin = 0.998;
+    Neritic_Burial = 0.002;
 
-    Phosphate.Remineralisation = [SurfaceRemin;DeepRemin];
+    Phosphate.Neritic_Remineralisation = [Neritic_Surface_Remin;0];
+    Phosphate.Pelagic_Remineralisation = [SurfaceRemin;DeepRemin];
+    Phosphate.Productivity_Split = [0.5;0.5];
 end

@@ -14,8 +14,8 @@ classdef Region < matlab.mixin.Copyable
         Data_Indices
     end
     methods
-        % Constructor method
         function self = Region(Conditions)
+        % Constructor method
             % Take input arguments if given
             if nargin~=0;
                 self.Conditions = Conditions;
@@ -42,8 +42,8 @@ classdef Region < matlab.mixin.Copyable
                           
             self.Data_Indices = {1,2,[3,4],[5,6],[7,8],9,[10,11],12,13,14,15,16,17,18,19};
         end
-        % Add self method
         function self = AddRegion(self);
+        % Add self method
             if isempty(self);
                 self = Region();
             else
@@ -60,9 +60,9 @@ classdef Region < matlab.mixin.Copyable
         end
                 
         %% Return Names
-        % Specifically goes through Variables which are in cells and
-        % returns the names
         function Names = Name(self);
+            % Specifically goes through Variables which are in cells and
+        % returns the names
             for n = 1:size(self.Conditions.Variable,1);
                 Names{n} = self.Conditions.Variable{n,1}{1};
             end
@@ -241,13 +241,6 @@ classdef Region < matlab.mixin.Copyable
                 Dimension_Maps{Self_Index} = self(Self_Index).Conditions.Presents.DimensionMap;
             end
         end
-        
-        %         function SeafloorSizes = GetSeafloorSizes(self);
-        %             for Self_Index = 1:numel(self);
-        %                 SeafloorSizes{Self_Index} = self(Self_Index).Conditions.GetSizeOf("Constants","Architecture","Hypsometric_Bin_Midpoints");
-        %             end
-        %         end
-        
         function Sizes = GetSizeOf(self,Type,Group,Name);
             if nargin<4;
                 Name = Group;

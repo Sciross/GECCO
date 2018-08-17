@@ -1,54 +1,60 @@
 % My simple, Heun solver
 % Uses an average of the forward and backward gradients to project forward
 % in time
-function DataOut = Heun_Unoptimised(ODE,Run,Chunk_Number);
+function [Compiled_Outputs,Flag_Out] = Heun_Unoptimised(ODE,Run,Chunk_Number);
     % Time_Out yt_Out,V_out,L_out,S_out,ST_out,P_out
     
     Time_In = Run.Chunks(Chunk_Number).Time_In(1):Run.Chunks(Chunk_Number).Time_In(3):Run.Chunks(Chunk_Number).Time_In(2);
     Time_Out = Run.Chunks(Chunk_Number).Time_Out(1):Run.Chunks(Chunk_Number).Time_Out(3):Run.Chunks(Chunk_Number).Time_Out(2);
     Step_Size_In = Run.Chunks(1).Time_In(3);
     Step_Size_Out = Run.Chunks(1).Time_Out(3);
-    Transients_EmptyFlag =  isempty(Run.Regions(1).Conditions.Transients.Matrix);
+    TransientsEmpty_Flag =  isempty(Run.Regions(1).Conditions.Transients.Matrix);
     
-    y0 = Run.Regions(1).Conditions.Initials.Conditions;
-    y0_Sub = Run.Regions(1).Conditions.Initials.Seafloor;
-    y0_Meta = Run.Regions(1).Conditions.Initials.Outgassing;
+    Initial_Conditions = Run.Regions(1).Conditions.Initials.Conditions;
+    Initial_Seafloor = Run.Regions(1).Conditions.Initials.Seafloor;
+    Initial_Outgassing = Run.Regions(1).Conditions.Initials.Outgassing;
     
     % Preallocate the output vector and assign the first value
-    yt_Out = NaN(numel(y0),numel(Time_Out));
-    y_1(:,1) = y0;
-    y_1_Sub(:,1) = y0_Sub;
-    y_1_Meta(:,1) = y0_Meta;
-    y_2(1:numel(y0),1) = NaN;
-    dy_1(1:numel(y0),1) = NaN;
-    dy_2(1:numel(y0),1) = NaN;
-    V_out = NaN(1,numel(Time_Out));
-    L_out = NaN(1,numel(Time_Out));
-    ST_out = NaN(1,numel(Time_Out));
-    if isnan(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths);
-        S_out = NaN;
-    else
-        S_out = NaN(numel(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths),numel(Time_Out));
+    Outputs = NaN(numel(Initial_Conditions),numel(Time_Out));
+    Temporary_Outputs_1(:,1) = Initial_Conditions;
+    Temporary_Seafloor_1(:,1) = Initial_Seafloor;
+    Temporary_Outgassing_1(:,1) = Initial_Outgassing;
+    
+    Temporary_Outputs_2(1:numel(Initial_Conditions),1) = NaN;
+    Temporary_Seafloor_2(1:numel(Initial_Seafloor),1) = NaN;
+    Temporary_Outgassing_2(1:numel(Initial_Outgassing),1) = NaN;
+    
+    Gradients_1(1:numel(Initial_Conditions),1) = NaN;
+    Gradients_2(1:numel(Initial_Conditions),1) = NaN;
+    
+    Transients = NaN(1,numel(Time_Out));
+    Lysocline = NaN(1,numel(Time_Out));
+    Seafloor_Total = NaN(1,numel(Time_Out));
+    Cores = NaN;
+    PIC_Burial = NaN(2,numel(Time_Out));
+    pH = NaN(2,numel(Time_Out));
+    
+    if ~isnan(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths);
+        Cores = NaN(numel(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths),numel(Time_Out));
     end
-    P_out = NaN(2,numel(Time_Out));
     
     % Run once to update present conditions ### WHY?
-    ODE(0,y0,y0_Sub,y0_Meta,Chunk_Number);
+    ODE(0,Initial_Conditions,Initial_Seafloor,Initial_Outgassing,Chunk_Number);
     
-    if ~Transients_EmptyFlag;
+    if ~TransientsEmpty_Flag;
         for Parameter_Number = 1:size(Run.Regions(1).Conditions.Transients.Matrix,1);
-            V0{Parameter_Number,1}(:) = Run.Regions(1).Conditions.Presents.(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,2}).(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,3})(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,4})';
+            Initial_Transients{Parameter_Number,1}(:) = Run.Regions(1).Conditions.Presents.(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,2}).(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,3})(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,4})';
         end
-        V = V0;
+        Temporary_Transients = Initial_Transients;
     else
-        V0 = [];
-        V = V0;
+        Initial_Transients = [];
+        Temporary_Transients = Initial_Transients;
     end
     
-    V_out = {};
+    Transients = {};
     
-    L0 = Run.Regions(1).Conditions.Presents.Carbonate_Chemistry.Lysocline;
-    L = L0;
+    Initial_Lysocline = Run.Regions(1).Conditions.Presents.Carbonate_Chemistry.Lysocline;
+    Temporary_Lysoline = Initial_Lysocline;
     
     %% Assume that the output difference is an exact multiple of h, and the
     % starting time is the same, otherwise error out
@@ -58,78 +64,77 @@ function DataOut = Heun_Unoptimised(ODE,Run,Chunk_Number);
         Place = 1;
         
         if Time_Out(1)==Time_In(1);
-            yt_Out(:,1) = y0;
-            if ~Transients_EmptyFlag;
+            Outputs(:,1) = Initial_Conditions;
+            if ~TransientsEmpty_Flag;
                 for Parameter_Number = 1:size(Run.Regions(1).Conditions.Transients.Matrix,1);
-                    V_out{Parameter_Number,1}(:,1) = (V0{Parameter_Number,1})';
+                    Transients{Parameter_Number,1}(:,1) = (Initial_Transients{Parameter_Number,1})';
                 end
             end
-            L_out(1) = L0;
+            Lysocline(1) = Initial_Lysocline;            
+            Seafloor_Total(:,1) = sum(Initial_Seafloor);
+            PIC_Burial(:,1) = Run.Regions(1).Conditions.Presents.Carbon.PIC_Pelagic_Burial;
+            pH(:,1) = Run.Regions(1).Conditions.Presents.Carbonate_Chemistry.pH;
             if ~isnan(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths);
-                S_out(:,1) = y0_Sub(1001-(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths/10));
+                Cores(:,1) = Initial_Seafloor(1001-(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths/10));
             end
-            ST_out(:,1) = sum(y0_Sub);
-            P_out(:,1) = Run.Regions(1).Conditions.Presents.Carbon.PIC_Burial;
             
-            if yt_Out(18,Place)<-5;
-                Edge_Box_Fill = 1+rem(yt_Out(18,Place)+5,10)/10;
+            if Outputs(18,Place)<-5;
+                Edge_Box_Fill = 1+rem(Outputs(18,Place)+5,10)/10;
             else
-                Edge_Box_Fill = rem(yt_Out(18,Place)+5,10)/10;
+                Edge_Box_Fill = rem(Outputs(18,Place)+5,10)/10;
             end
             
-            OceanArray = double(Run.Regions(1).Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(yt_Out(17,Place)));
-            OceanArray(1001-round(yt_Out(18,Place)/10)) = Edge_Box_Fill;
+            OceanArray = double(Run.Regions(1).Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(Outputs(17,Place)));
+            OceanArray(1001-round(Outputs(18,Place)/10)) = Edge_Box_Fill;
             
-            % Carbonate_Weathering = (1-OceanArray).*(y_2_Sub.*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure).*y(14).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Weatherability;
-            ST_out(2,Place) = sum((1-OceanArray).*(y_1_Sub).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure);
+            Seafloor_Total(2,Place) = sum((1-OceanArray).*(Temporary_Seafloor_1).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure);
             
             Place = 2;
         end
         
         Count = 1;
-%         try
+        try
             for Current_Step = 2:numel(Time_In);
                 % Calculate gradient at point 1
-                [dy_1,dy_1_Sub,dy_1_Meta] = ODE(Time_In(Current_Step-1),y_1,y_1_Sub,y_1_Meta,Chunk_Number);
+                [Gradients_1,dy_1_Sub,dy_1_Meta] = ODE(Time_In(Current_Step-1),Temporary_Outputs_1,Temporary_Seafloor_1,Temporary_Outgassing_1,Chunk_Number);
                 % Calculate y value using that gradient
-                y_2 = y_1+(dy_1.*Step_Size_In);
-                y_2_Sub = y_1_Sub+(dy_1_Sub.*Step_Size_In);
-                y_2_Meta = y_1_Meta+(dy_1_Meta.*Step_Size_In);
+                Temporary_Outputs_2 = Temporary_Outputs_1+(Gradients_1.*Step_Size_In);
+                Temporary_Seafloor_2 = Temporary_Seafloor_1+(dy_1_Sub.*Step_Size_In);
+                Temporary_Outgassing_2 = Temporary_Outgassing_1+(dy_1_Meta.*Step_Size_In);
                 % Calculate gradient using new y value
-                [dy_2,dy_2_Sub,dy_2_Meta] = ODE(Time_In(Current_Step),y_2,y_2_Sub,y_2_Meta,Chunk_Number);
+                [Gradients_2,dy_2_Sub,dy_2_Meta] = ODE(Time_In(Current_Step),Temporary_Outputs_2,Temporary_Seafloor_2,Temporary_Outgassing_2,Chunk_Number);
                 % Recalculate y at point 2
-                y_2 = y_1+(((dy_1+dy_2)/2).*Step_Size_In);
-                y_2_Sub = y_1_Sub+(((dy_1_Sub+dy_2_Sub)/2).*Step_Size_In);
-                y_2_Meta = y_1_Meta+(((dy_1_Meta+dy_2_Meta)/2).*Step_Size_In);
-%                 ODE(Time_In(Current_Step),y_2,y_2_Sub,y_2_Meta);
+                Temporary_Outputs_2 = Temporary_Outputs_1+(((Gradients_1+Gradients_2)/2).*Step_Size_In);
+                Temporary_Seafloor_2 = Temporary_Seafloor_1+(((dy_1_Sub+dy_2_Sub)/2).*Step_Size_In);
+                Temporary_Outgassing_2 = Temporary_Outgassing_1+(((dy_1_Meta+dy_2_Meta)/2).*Step_Size_In);
                 
                 
                 if Count==Count_Reached;
-                    yt_Out(:,Place) = y_2;
+                    Outputs(:,Place) = Temporary_Outputs_2;
                     % Lysocline
-                    L_out(:,Place) = Run.Regions(1).Conditions.Presents.Carbonate_Chemistry.Lysocline;
+                    Lysocline(:,Place) = Run.Regions(1).Conditions.Presents.Carbonate_Chemistry.Lysocline;
+                    Seafloor_Total(1,Place) = sum(Temporary_Seafloor_2);
+                    PIC_Burial(:,Place) = Run.Regions(1).Conditions.Presents.Carbon.PIC_Pelagic_Burial;
+                    pH(:,Place) = Run.Regions(1).Conditions.Presents.Carbonate_Chemistry.pH;
                     if ~isnan(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths);
-                        S_out(:,Place) = y_2_Sub(1001-(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths/10));
+                        Cores(:,Place) = Temporary_Seafloor_2(1001-(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths/10));
                     end
-                    ST_out(1,Place) = sum(y_2_Sub);
-                    P_out(:,Place) = Run.Regions(1).Conditions.Presents.Carbon.PIC_Burial;
                     
-                    if yt_Out(18,Place)<-5;
-                        Edge_Box_Fill = 1+rem(yt_Out(18,Place)+5,10)/10;
+                    if Outputs(18,Place)<-5;
+                        Edge_Box_Fill = 1+rem(Outputs(18,Place)+5,10)/10;
                     else
-                        Edge_Box_Fill = rem(yt_Out(18,Place)+5,10)/10;
+                        Edge_Box_Fill = rem(Outputs(18,Place)+5,10)/10;
                     end
                     
-                    OceanArray = double(Run.Regions(1).Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(yt_Out(17,Place)));
-                    OceanArray(1001-round(yt_Out(18,Place)/10)) = Edge_Box_Fill;
+                    OceanArray = double(Run.Regions(1).Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(Outputs(17,Place)));
+                    OceanArray(1001-round(Outputs(18,Place)/10)) = Edge_Box_Fill;
                     
-%                     Carbonate_Weathering = (1-OceanArray).*(y_2_Sub.*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure).*y(14).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Weatherability;
-                    ST_out(2,Place) = sum((1-OceanArray).*(y_2_Sub).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure);
+                    Seafloor_Total(2,Place) = sum((1-OceanArray).*(Temporary_Seafloor_2).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure);
                     
-                    if ~Transients_EmptyFlag;
+                    if ~TransientsEmpty_Flag;
                         for Parameter_Number = 1:size(Run.Regions(1).Conditions.Transients.Matrix,1);
-                            V{Parameter_Number,1} = Run.Regions(1).Conditions.Presents.(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,2}).(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,3})(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,4});
-                            V_out{Parameter_Number,1}(:,Place) = V{Parameter_Number,1};
+                            Temporary_Transients{Parameter_Number,1} = Run.Regions(1).Conditions.Presents.(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,2}).(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,3})(Run.Regions(1).Conditions.Transients.Matrix{Parameter_Number,4});
+                            Transients{Parameter_Number,1}(:,Place) = Temporary_Transients{Parameter_Number,1};
                         end
                     end
                     
@@ -138,19 +143,31 @@ function DataOut = Heun_Unoptimised(ODE,Run,Chunk_Number);
                 else
                     Count = Count+1;
                 end
-                y_1 = y_2;
-                y_1_Sub = y_2_Sub;
-                y_1_Meta = y_2_Meta;
+                Temporary_Outputs_1 = Temporary_Outputs_2;
+                Temporary_Seafloor_1 = Temporary_Seafloor_2;
+                Temporary_Outgassing_1 = Temporary_Outgassing_2;
             end
+        catch Error_Object
+            if ~isnan(Cores);
+                Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH;Cores],Transients,PIC_Burial};
+            else
+                Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH],Transients,PIC_Burial};
+            end
+            Run.Regions(1).Outputs.Outgassing = Temporary_Outgassing_2;
+            Run.Regions(1).Outputs.Seafloor = Temporary_Seafloor_2;
+            Flag_Out = 0;
+            return
+        end
     else
         error("The input and output times are not aligned. Output spacing must be a multiple of solver spacing, and must start at the same time.");
     end
     
-    if ~isnan(S_out);
-        DataOut = {yt_Out,[Time_Out;L_out;ST_out;S_out],V_out,P_out};
+    if ~isnan(Cores);
+        Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH;Cores],Transients,PIC_Burial};
     else
-        DataOut = {yt_Out,[Time_Out;L_out;ST_out],[],V_out,P_out};
+        Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH],Transients,PIC_Burial};
     end
-    Run.Regions(1).Outputs.Outgassing = y_2_Meta;
-    Run.Regions(1).Outputs.Seafloor = y_2_Sub;
+    Run.Regions(1).Outputs.Outgassing = Temporary_Outgassing_2;
+    Run.Regions(1).Outputs.Seafloor = Temporary_Seafloor_2;
+    Flag_Out = 1;
 end

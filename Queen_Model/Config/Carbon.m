@@ -4,11 +4,17 @@ classdef Carbon < matlab.mixin.Copyable & ParameterLoad
         Riverine_Alkalinity
         Redfield_Ratio
         Production_Ratio
+        Calcifier_Fraction
         
-        PIC_Remineralisation
-        PIC_Burial
-        POC_Remineralisation
-        POC_Burial
+        PIC_Neritic_Remineralisation
+        PIC_Pelagic_Remineralisation
+        PIC_Neritic_Burial
+        PIC_Pelagic_Burial
+        
+        POC_Neritic_Remineralisation
+        POC_Pelagic_Remineralisation
+        POC_Neritic_Burial
+        POC_Pelagic_Burial
         POC_Burial_Maximum_Depth
         
     end    

@@ -5,7 +5,9 @@ classdef Phosphate < matlab.mixin.Copyable & ParameterLoad
         Mortality
         Biological_Half_Constant
         Algal_Slowing_Factor
-        Remineralisation
+        Neritic_Remineralisation
+        Pelagic_Remineralisation
+        Productivity_Split
     end    
     methods
         function self = Phosphate(Empty_Cell_Flag);

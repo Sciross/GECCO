@@ -73,7 +73,7 @@ BiologicalPOCExport = BiologicalExport*Model.Conditions.Presents.Carbon.Redfield
 POCBiologicalFlux = BiologicalPOCExport.*Model.Conditions.Presents.Carbon.POC_Remineralisation;
 POCBurialFlux = BiologicalPOCExport.*Model.Conditions.Presents.Carbon.POC_Burial;
 
-BiologicalPICExport = BiologicalExport*Model.Conditions.Presents.Carbon.Redfield_Ratio*Model.Conditions.Presents.Carbon.Production_Ratio;
+BiologicalPICExport = sum(BiologicalExport*Model.Conditions.Presents.Carbon.Redfield_Ratio.*Model.Conditions.Presents.Carbon.Production_Ratio.*Model.Conditions.Presents.Carbon.Calcifier_Fraction);
 
 % Deep Remineralisation
 Ocean_Area_Fraction = 1-(CalculateRemin_MyLinear(Model.Conditions.Presents.Architecture.Hypsometric_Interpolation_Matrix,-y(17))/100);
