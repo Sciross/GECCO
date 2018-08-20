@@ -13,17 +13,17 @@ function [dy,dy_Sub,dy_Outgas] = Core(t,y,y_Sub,y_Outgas,Chunk_Number,Model)
 
     %% Biology + Phosphate
     % Biological export: Export = [A] * Ocean.Volume * Mortality
-    Neritic_Biological_Phosphate_Export = y(2)*Model.Conditions.Presents.Architecture.Ocean_Volumes(1)*Model.Conditions.Presents.Phosphate.Mortality.*Model.Conditions.Presents.Phosphate.Productivity_Split(1); %mol/yr
-    Pelagic_Biological_Phosphate_Export = y(2)*Model.Conditions.Presents.Architecture.Ocean_Volumes(1)*Model.Conditions.Presents.Phosphate.Mortality.*Model.Conditions.Presents.Phosphate.Productivity_Split(2); %mol/yr
+    Phosphate_Neritic_Biological_Export = y(2)*Model.Conditions.Presents.Architecture.Ocean_Volumes(1)*Model.Conditions.Presents.Phosphate.Mortality.*Model.Conditions.Presents.Phosphate.Productivity_Split(1); %mol/yr
+    Phosphate_Pelagic_Biological_Export = y(2)*Model.Conditions.Presents.Architecture.Ocean_Volumes(1)*Model.Conditions.Presents.Phosphate.Mortality.*Model.Conditions.Presents.Phosphate.Productivity_Split(2); %mol/yr
 
+    Phosphate_Biological_Neritic_Influx = Phosphate_Neritic_Biological_Export.*Model.Conditions.Presents.Phosphate.Neritic_Remineralisation;
+    Phosphate_Biological_Pelagic_Influx = Phosphate_Pelagic_Biological_Export.*Model.Conditions.Presents.Phosphate.Pelagic_Remineralisation;
+    
     % Fluxes
     Phosphate_Flux_Rivers = (Model.Conditions.Presents.Phosphate.Riverine_Concentration.*Model.Conditions.Presents.Architecture.Riverine_Volume);
     Phosphate_Flux_Mixing = Model.Conditions.Presents.Architecture.Mixing_Coefficient.*Model.Conditions.Presents.Architecture.Ocean_Area.*(y(4)-y(3));
 
-    Phosphate_Biological_Neritic_Influx = Neritic_Biological_Phosphate_Export.*Model.Conditions.Presents.Phosphate.Neritic_Remineralisation;
-    Phosphate_Biological_Pelagic_Influx = Pelagic_Biological_Phosphate_Export.*Model.Conditions.Presents.Phosphate.Pelagic_Remineralisation;
-
-    Phosphate_Flux_Total(1,1) = Phosphate_Flux_Rivers + Phosphate_Flux_Mixing + Phosphate_Biological_Neritic_Influx(1) + Phosphate_Biological_Pelagic_Influx(1) - Neritic_Biological_Phosphate_Export - Pelagic_Biological_Phosphate_Export;
+    Phosphate_Flux_Total(1,1) = Phosphate_Flux_Rivers + Phosphate_Flux_Mixing + Phosphate_Biological_Neritic_Influx(1) + Phosphate_Biological_Pelagic_Influx(1) - Phosphate_Neritic_Biological_Export - Phosphate_Pelagic_Biological_Export;
     Phosphate_Flux_Total(2,1) = Phosphate_Biological_Pelagic_Influx(2) - Phosphate_Flux_Mixing;
     % Phosphate_Burial = Phosphate_Flux_Rivers-sum(Phosphate_Flux_Total);
 
@@ -71,56 +71,51 @@ function [dy,dy_Sub,dy_Outgas] = Core(t,y,y_Sub,y_Outgas,Chunk_Number,Model)
 
     Carbonate_Weathering = (1-OceanArray).*(y_Sub.*Model.Conditions.Presents.Weathering.Carbonate_Exposure).*y(14).*Model.Conditions.Presents.Weathering.Carbonate_Weatherability;
 
-    %% Carbon Fluxes
-    % POC
-    Neritic_Biological_POC_Export = Neritic_Biological_Phosphate_Export*Model.Conditions.Presents.Carbon.Redfield_Ratio;
-    Pelagic_Biological_POC_Export = Pelagic_Biological_Phosphate_Export*Model.Conditions.Presents.Carbon.Redfield_Ratio;
+    %% POC Fluxes
+    Neritic_Biological_POC_Export = Phosphate_Neritic_Biological_Export*Model.Conditions.Presents.Carbon.Redfield_Ratio;
+    Pelagic_Biological_POC_Export = Phosphate_Pelagic_Biological_Export*Model.Conditions.Presents.Carbon.Redfield_Ratio;
 
-    POC_Biological_Neritic_Influx = (Neritic_Biological_POC_Export.*Model.Conditions.Presents.Carbon.POC_Neritic_Remineralisation);
-    POC_Biological_Pelagic_Influx = (Pelagic_Biological_POC_Export.*Model.Conditions.Presents.Carbon.POC_Pelagic_Remineralisation);
+    POC_Neritic_Biological_Influx = (Neritic_Biological_POC_Export.*Model.Conditions.Presents.Carbon.POC_Neritic_Remineralisation);
+    POC_Pelagic_Biological_Influx = (Pelagic_Biological_POC_Export.*Model.Conditions.Presents.Carbon.POC_Pelagic_Remineralisation);
 
     POC_Burial_Flux(1) = Neritic_Biological_POC_Export.*Model.Conditions.Presents.Carbon.POC_Neritic_Burial(1);
     POC_Burial_Flux(2) = Pelagic_Biological_POC_Export.*Model.Conditions.Presents.Carbon.POC_Pelagic_Burial(2);
-
-
-    % PIC
-    Neritic_Biological_PIC_Export = Neritic_Biological_Phosphate_Export*Model.Conditions.Presents.Carbon.Redfield_Ratio*Model.Conditions.Presents.Carbon.Calcifier_Fraction(1)*Model.Conditions.Presents.Carbon.Production_Ratio(1);
-    Pelagic_Biological_PIC_Export = Pelagic_Biological_Phosphate_Export*Model.Conditions.Presents.Carbon.Redfield_Ratio*Model.Conditions.Presents.Carbon.Calcifier_Fraction(2)*Model.Conditions.Presents.Carbon.Production_Ratio(2);
-
-    % Deep Remineralisation
+    
+    %% PIC Coefficients    
+    % Calculate PIC Remineralisation and Burial Coefficients
     Ocean_Area_Fraction = 1-(CalculateRemin_MyLinear(Model.Conditions.Presents.Architecture.Hypsometric_Interpolation_Matrix,-y(17))/100);
     Fraction_Above_Lysocline = (CalculateRemin_MyLinear(Model.Conditions.Presents.Architecture.Hypsometric_Interpolation_Matrix,Model.Conditions.Presents.Carbonate_Chemistry.Lysocline)/100);
-
+    
     Model.Conditions.Presents.Carbon.PIC_Pelagic_Burial(2,1) = ((Fraction_Above_Lysocline-(1-Ocean_Area_Fraction))./Ocean_Area_Fraction)-Model.Conditions.Presents.Carbon.PIC_Pelagic_Remineralisation(1);
     Model.Conditions.Presents.Carbon.PIC_Pelagic_Remineralisation(2,1) = 1-(Model.Conditions.Presents.Carbon.PIC_Pelagic_Burial(2));
+    
+    %% PIC Fluxes
+    PIC_Neritic_Biological_Export = Phosphate_Neritic_Biological_Export*Model.Conditions.Presents.Carbon.Redfield_Ratio*Model.Conditions.Presents.Carbon.Calcifier_Fraction(1)*Model.Conditions.Presents.Carbon.Production_Ratio(1);
+    PIC_Pelagic_Biological_Export = Phosphate_Pelagic_Biological_Export*Model.Conditions.Presents.Carbon.Redfield_Ratio*Model.Conditions.Presents.Carbon.Calcifier_Fraction(2)*Model.Conditions.Presents.Carbon.Production_Ratio(2);
 
-    % DIC
-    DIC_Riverine_Flux = Model.Conditions.Presents.Carbon.Riverine_Carbon.*Model.Conditions.Presents.Architecture.Riverine_Volume;
-
-    DIC_Mixing_Flux = (y(6)-y(5)).*Model.Conditions.Presents.Architecture.Mixing_Coefficient.*Model.Conditions.Presents.Architecture.Ocean_Area;
-
-    PIC_Biological_Neritic_Influx = Neritic_Biological_PIC_Export.*Model.Conditions.Presents.Carbon.PIC_Neritic_Remineralisation;
-    PIC_Biological_Pelagic_Influx = Pelagic_Biological_PIC_Export.*Model.Conditions.Presents.Carbon.PIC_Pelagic_Remineralisation;
-
-    PIC_Burial_Flux(1) = Neritic_Biological_PIC_Export.*Model.Conditions.Presents.Carbon.PIC_Neritic_Burial(1);
-    PIC_Burial_Flux(2) = Pelagic_Biological_PIC_Export.*Model.Conditions.Presents.Carbon.PIC_Pelagic_Burial(2);
-
-    [AirSeaExchange,SeaAirExchange] = GetAirSeaGasExchange(y(1),Model.Conditions.Presents.Carbonate_Chemistry.CO2(1),Model.Conditions.Presents.Carbonate_Chemistry.CCKs(1));
-
+    PIC_Biological_Neritic_Influx = PIC_Neritic_Biological_Export.*Model.Conditions.Presents.Carbon.PIC_Neritic_Remineralisation;
+    PIC_Biological_Pelagic_Influx = PIC_Pelagic_Biological_Export.*Model.Conditions.Presents.Carbon.PIC_Pelagic_Remineralisation;
+    
+    PIC_Burial_Flux(1) = PIC_Neritic_Biological_Export.*Model.Conditions.Presents.Carbon.PIC_Neritic_Burial(1);
+    PIC_Burial_Flux(2) = PIC_Pelagic_Biological_Export.*Model.Conditions.Presents.Carbon.PIC_Pelagic_Burial(2);
+    
     %% Atmosphere
+    [AirSeaExchange,SeaAirExchange] = GetAirSeaGasExchange(y(1),Model.Conditions.Presents.Carbonate_Chemistry.CO2(1),Model.Conditions.Presents.Carbonate_Chemistry.CCKs(1));
     GasFlux = ((SeaAirExchange-AirSeaExchange).*Model.Conditions.Presents.Architecture.Ocean_Area);
 
-    %% DIC
-    DIC_Flux(1,1) = DIC_Riverine_Flux + DIC_Mixing_Flux - Neritic_Biological_PIC_Export + PIC_Biological_Neritic_Influx(1) - Pelagic_Biological_PIC_Export + PIC_Biological_Pelagic_Influx(1) - Neritic_Biological_POC_Export + POC_Biological_Neritic_Influx(1) - Pelagic_Biological_POC_Export + POC_Biological_Pelagic_Influx(1) - GasFlux;
-    DIC_Flux(2,1) = PIC_Biological_Neritic_Influx(2) + PIC_Biological_Pelagic_Influx(2) - DIC_Mixing_Flux + POC_Biological_Neritic_Influx(2) + POC_Biological_Pelagic_Influx(2);
+    %% DIC Fluxes
+    DIC_Riverine_Flux = Model.Conditions.Presents.Carbon.Riverine_Carbon.*Model.Conditions.Presents.Architecture.Riverine_Volume;
+    DIC_Mixing_Flux = (y(6)-y(5)).*Model.Conditions.Presents.Architecture.Mixing_Coefficient.*Model.Conditions.Presents.Architecture.Ocean_Area;
+    
+    DIC_Flux(1,1) = DIC_Riverine_Flux + DIC_Mixing_Flux - PIC_Neritic_Biological_Export + PIC_Biological_Neritic_Influx(1) - PIC_Pelagic_Biological_Export + PIC_Biological_Pelagic_Influx(1) - Neritic_Biological_POC_Export + POC_Neritic_Biological_Influx(1) - Pelagic_Biological_POC_Export + POC_Pelagic_Biological_Influx(1) - GasFlux;
+    DIC_Flux(2,1) = PIC_Biological_Neritic_Influx(2) + PIC_Biological_Pelagic_Influx(2) - DIC_Mixing_Flux + POC_Neritic_Biological_Influx(2) + POC_Pelagic_Biological_Influx(2);
 
     %% Alkalinity Fluxes
     Alkalinity_Riverine_Flux = Model.Conditions.Presents.Carbon.Riverine_Alkalinity*Model.Conditions.Presents.Architecture.Riverine_Volume;
-
     Alkalinity_Mixing_Flux = (y(8)-y(7)).*Model.Conditions.Presents.Architecture.Mixing_Coefficient.*Model.Conditions.Presents.Architecture.Ocean_Area;
 
-    Alkalinity_Biological_Neritic_Export = Neritic_Biological_PIC_Export.*2;
-    Alkalinity_Biological_Pelagic_Export = Pelagic_Biological_PIC_Export.*2;
+    Alkalinity_Biological_Neritic_Export = PIC_Neritic_Biological_Export.*2;
+    Alkalinity_Biological_Pelagic_Export = PIC_Pelagic_Biological_Export.*2;
 
     Alkalinity_Biological_Neritic_Influx = Alkalinity_Biological_Neritic_Export.*Model.Conditions.Presents.Carbon.PIC_Neritic_Remineralisation;
     Alkalinity_Biological_Pelagic_Influx = Alkalinity_Biological_Pelagic_Export.*Model.Conditions.Presents.Carbon.PIC_Pelagic_Remineralisation;
@@ -128,49 +123,36 @@ function [dy,dy_Sub,dy_Outgas] = Core(t,y,y_Sub,y_Outgas,Chunk_Number,Model)
     Alkalinity_Neritic_Burial_Flux = Alkalinity_Biological_Neritic_Export.*Model.Conditions.Presents.Carbon.PIC_Neritic_Burial;
     Alkalinity_Pelagic_Burial_Flux = Alkalinity_Biological_Pelagic_Export.*Model.Conditions.Presents.Carbon.PIC_Pelagic_Burial;
 
-    % Alkalinity_Biological_Export = Pelagic_Biological_Export*Model.Conditions.Presents.Carbon.Redfield_Ratio*Model.Conditions.Presents.Carbon.Production_Ratio*2;
-    % AlkalinityBiologicalFlux = (Alkalinity_Biological_Export.*Model.Conditions.Presents.Carbon.PIC_Remineralisation);
-
     %% Alkalinity
-    Alkalinity_Flux(1,1) = Alkalinity_Riverine_Flux + Alkalinity_Mixing_Flux - Alkalinity_Biological_Pelagic_Export + Alkalinity_Biological_Neritic_Influx(1) + Alkalinity_Biological_Pelagic_Influx(1);
+    Alkalinity_Flux(1,1) = Alkalinity_Riverine_Flux + Alkalinity_Mixing_Flux - Alkalinity_Biological_Neritic_Export + Alkalinity_Biological_Neritic_Influx(1) - Alkalinity_Biological_Pelagic_Export + Alkalinity_Biological_Pelagic_Influx(1);
     Alkalinity_Flux(2,1) = Alkalinity_Biological_Neritic_Influx(2) + Alkalinity_Biological_Pelagic_Influx(2) - Alkalinity_Mixing_Flux;
 
     %% Subduction
     Carbonate_SurfBuried = ((SurfArray.*Model.Conditions.Presents.Architecture.Hypsometry)./(sum(SurfArray.*Model.Conditions.Presents.Architecture.Hypsometry))).*PIC_Burial_Flux(1);
     Carbonate_DeepBuried = ((DeepArray.*Model.Conditions.Presents.Architecture.Hypsometry)./(sum(DeepArray.*Model.Conditions.Presents.Architecture.Hypsometry))).*PIC_Burial_Flux(2);
-    % Carbonate_Buried = Carbonate_SurfBuried+Carbonate_DeepBuried;
 
     if sum(DeepArray)==0;
         Carbonate_DeepBuried = zeros(numel(DeepArray),1);
     end
 
-    % POCSurfArray = [ones(50,1);zeros(950,1)];
-    % POCDeepArray = [zeros(1050,1);ones((Model.Conditions.Presents.POC_Burial_Max_Depth/10)-51,1);zeros(2001-(Model.Conditions.Presents.POC_Burial_Max_Depth/10)+1,1)];
     POCDeepArray = zeros(numel(y_Sub),1);
     POCDeepArray(1051:(1000+Model.Conditions.Presents.Carbon.POC_Burial_Maximum_Depth/10)) = Model.Conditions.Presents.Architecture.Hypsometry(1051:(1000+Model.Conditions.Presents.Carbon.POC_Burial_Maximum_Depth/10));
 
-    % Carbonate_POCSurfBuried = (POCSurfArray./(sum(POCSurfArray))).*POCBurialFlux(1);
     Carbonate_POCBuried = (POCDeepArray./(sum(POCDeepArray))).*POC_Burial_Flux(2);
 
     Carbonate_Downgoing_Leaving = y_Sub.*Model.Conditions.Presents.Seafloor.Subduction_Rate;
     Carbonate_Downgoing_Entering = [0;Carbonate_Downgoing_Leaving(1:end-1)];
     Carbonate_Upgoing_Leaving = y_Sub.*Model.Conditions.Presents.Seafloor.Uplift_Rate;
     Carbonate_Upgoing_Entering = [Carbonate_Upgoing_Leaving(2:end);0];
-    % Carbonate_Uplifted = [y_Sub((Model.Conditions.Presents.Obduction_Depths(1)/10):(Model.Conditions.Presents.Obduction_Depths(2)/10)).*Model.Conditions.Presents.Obduction_Rate;zeros(numel(((Model.Conditions.Presents.Obduction_Depths(2)/10)+1):2001),1)];
-    % Carbonate_Uplifted = zeros(numel(y_Sub),1);
-    % Carbonate_Uplifted(1000+(Model.Conditions.Presents.Obduction_Depths(1)/10) : 1000+(Model.Conditions.Presents.Obduction_Depths(2))/10) = Model.Conditions.Presents.Obduction_Rate;
-    % Carbonate_Uplifted = Carbonate_Uplifted.*y_Sub;
     Carbonate_Subducted = (y_Sub.*Model.Conditions.Presents.Seafloor.Subduction_Gauss);
 
     dy_Sub = (Carbonate_SurfBuried+Carbonate_DeepBuried+Carbonate_POCBuried+Carbonate_Downgoing_Entering+Carbonate_Upgoing_Entering-Carbonate_Downgoing_Leaving-Carbonate_Subducted-Carbonate_Upgoing_Leaving-Carbonate_Weathering);
 
     %% Outgassing
     Outgassing_Added = sum(Carbonate_Subducted);
-    % OutBoxes = floor(t/Model.Conditions.Presents.Outgassing_Temporal_Resolution) + (Model.Conditions.Presents.Outgassing_Mean_Lag + [(-3*Model.Conditions.Presents.Outgassing_Spread),(3*Model.Conditions.Presents.Outgassing_Spread)])/Model.Conditions.Presents.Outgassing_Temporal_Resolution;
     OutBoxes = floor((t+Model.Conditions.Presents.Outgassing.Mean_Lag)/Model.Conditions.Presents.Outgassing.Temporal_Resolution)+[-(numel(Model.Conditions.Presents.Outgassing.Gauss)-1)/2,(numel(Model.Conditions.Presents.Outgassing.Gauss)-1)/2];
+    
     dy_Outgas(OutBoxes(1):OutBoxes(2)) = (Outgassing_Added.*Model.Conditions.Presents.Outgassing.Gauss);
-    % 
-    % Carbonate_Assimilated = 0.5*((y_Outgas(1+floor((t)/Model.Conditions.Presents.Outgassing_Temporal_Resolution))/Model.Conditions.Presents.Outgassing_Temporal_Resolution));
     Outgassing = ((y_Outgas(1+floor((t)/Model.Conditions.Presents.Outgassing.Temporal_Resolution))/Model.Conditions.Presents.Outgassing.Temporal_Resolution));
 
     %% Ice
@@ -194,7 +176,7 @@ function [dy,dy_Sub,dy_Outgas] = Core(t,y,y_Sub,y_Outgas,Chunk_Number,Model)
 
     %% Assign dys
     % CO2
-    dy(1) = 0; %CO2_Flux./Model.Conditions.Presents.Architecture.Atmosphere_Volume;
+    dy(1) = 0; % CO2_Flux./Model.Conditions.Presents.Architecture.Atmosphere_Volume;
     % Algae
     dy(2) = y(2)*((Model.Conditions.Presents.Phosphate.Maximum_Growth_Rate*(y(3)/(Model.Conditions.Presents.Phosphate.Biological_Half_Constant+y(3))))-Model.Conditions.Presents.Phosphate.Mortality)*Model.Conditions.Presents.Phosphate.Algal_Slowing_Factor; %mol/m3/yr
     % Phophate
@@ -225,8 +207,6 @@ function [dy,dy_Sub,dy_Outgas] = Core(t,y,y_Sub,y_Outgas,Chunk_Number,Model)
     dy(18) = Model.Conditions.Presents.Ice.Snow_Line_Sensitivity*dy(9);
 
     %% Assign Globals
-    % Model.Conditions.Presents.Carbonate_Chemistry.HIn = (10.^(-Model.Conditions.Presents.Carbonate_Chemistry.pH))*1000;
-
     Model.Conditions.Presents.Carbon.Riverine_Carbon = (2*(Silicate_Weathering+sum(Carbonate_Weathering)))./Model.Conditions.Presents.Architecture.Riverine_Volume;
     Model.Conditions.Presents.Carbon.Riverine_Alkalinity =(2*(Silicate_Weathering+sum(Carbonate_Weathering)))./Model.Conditions.Presents.Architecture.Riverine_Volume;
 
