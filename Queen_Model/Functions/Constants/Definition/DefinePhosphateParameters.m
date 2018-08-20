@@ -6,12 +6,12 @@ function Phosphate = DefinePhosphateParameters(Phosphate);
     Phosphate.Algal_Slowing_Factor = 0.001;
     Phosphate.Riverine_Concentration = 0.002; %mol/m^3/yr
     
-    SurfaceRemin = 0.95; %fraction
-    Burial = 0.002; %fraction
+    SurfaceRemin = 0.9010; %fraction
+    Burial = 0.001; %fraction
     DeepRemin = 1-(SurfaceRemin+Burial); %fraction
     
-    Neritic_Surface_Remin = 0.998;
-    Neritic_Burial = 0.002;
+    Neritic_Surface_Remin = 0.999;
+    Neritic_Burial = 0.001;
 
     Phosphate.Neritic_Remineralisation = [Neritic_Surface_Remin;0];
     Phosphate.Pelagic_Remineralisation = [SurfaceRemin;DeepRemin];

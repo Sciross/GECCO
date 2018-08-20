@@ -14,6 +14,6 @@ function Carbon = DefineCarbonParameters(Carbon);
     Carbon.POC_Burial_Maximum_Depth = 8000;
 
     Carbon.Production_Ratio = [0.1;0.1]; %fraction
-    Carbon.Calcifier_Fraction = [0.5;0.035];
+    Carbon.Calcifier_Fraction = [0.035;0.035];
     
 end
