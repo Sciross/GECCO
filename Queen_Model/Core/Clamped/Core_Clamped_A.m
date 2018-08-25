@@ -49,9 +49,9 @@ function [dy,dy_Sub,dy_Outgas] = Core(t,y,y_Sub,y_Outgas,Chunk_Number,Model)
 
     %% Sea level arrays
     if y(18)<-5;
-         Edge_Box_Fill = 1+rem(y(18)+5,10)/10;
+         Edge_Box_Fill = 1+rem(y(17)+5,10)/10;
     else
-        Edge_Box_Fill = rem(y(18)+5,10)/10;
+        Edge_Box_Fill = rem(y(17)+5,10)/10;
     end
 
     OceanArray = double(Model.Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(y(17)));
@@ -176,7 +176,7 @@ function [dy,dy_Sub,dy_Outgas] = Core(t,y,y_Sub,y_Outgas,Chunk_Number,Model)
 
     %% Assign dys
     % CO2
-    dy(1) = 0; % CO2_Flux./Model.Conditions.Presents.Architecture.Atmosphere_Volume;
+    dy(1) = 0; %CO2_Flux./Model.Conditions.Presents.Architecture.Atmosphere_Volume;
     % Algae
     dy(2) = y(2)*((Model.Conditions.Presents.Phosphate.Maximum_Growth_Rate*(y(3)/(Model.Conditions.Presents.Phosphate.Biological_Half_Constant+y(3))))-Model.Conditions.Presents.Phosphate.Mortality)*Model.Conditions.Presents.Phosphate.Algal_Slowing_Factor; %mol/m3/yr
     % Phophate

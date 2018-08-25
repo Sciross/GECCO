@@ -49,9 +49,9 @@ function [dy,dy_Sub,dy_Outgas] = Core(t,y,y_Sub,y_Outgas,Chunk_Number,Model)
 
     %% Sea level arrays
     if y(18)<-5;
-         Edge_Box_Fill = 1+rem(y(18)+5,10)/10;
+         Edge_Box_Fill = 1+rem(y(17)+5,10)/10;
     else
-        Edge_Box_Fill = rem(y(18)+5,10)/10;
+        Edge_Box_Fill = rem(y(17)+5,10)/10;
     end
 
     OceanArray = double(Model.Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(y(17)));
