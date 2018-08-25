@@ -156,7 +156,7 @@ classdef GECCO < handle
                         CurrentDims{2} = 'k';
                     elseif strcmp(Data_Names{Data_Names_Index},'Cores');
                         CurrentDims{1} = 'c';
-                        CurrentDims{2} = 'k';
+                        CurrentDims{2} = 't';
                     end
 
                 end
@@ -1333,7 +1333,7 @@ classdef GECCO < handle
             self.Runs(Run_Index).Regions(Region_Index).Outputs.Carbonate_Exposed = Dependents(4,:);
             self.Runs(Run_Index).Regions(Region_Index).Outputs.pH = Dependents(5:6,:);
             if size(Dependents,1)>6;
-                self.Runs(Run_Index).Regions(Region_Index).Outputs.Cores = Dependents(5:end,:);
+                self.Runs(Run_Index).Regions(Region_Index).Outputs.Cores = Dependents(7:end,:);
             end
         end
         
