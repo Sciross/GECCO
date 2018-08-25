@@ -181,6 +181,8 @@ classdef Condition < matlab.mixin.Copyable
             else
                 self.Presents.Seafloor.Subduction_Gauss = (GenerateGaussian(self.Constants.Architecture.Hypsometric_Bin_Midpoints,[self.Constants.Seafloor.Subduction_Spread,-self.Constants.Seafloor.Subduction_Mean]))*self.Constants.Seafloor.Subduction_Risk;
             end
+            self.Presents.Seafloor.Subduction_Gauss = (self.Presents.Seafloor.Subduction_Gauss./max(self.Presents.Seafloor.Subduction_Gauss)).*self.Presents.Seafloor.Subduction_Risk;
+            
             
             % Outgassing
             Max_Outgassing = self.GetMaxOutgassing(Run_End);
