@@ -665,62 +665,28 @@ classdef GECCO < handle
             else
                 [SameFileFlag,RunFilesFlag,RegionFilesFlag] = self.ValidateSaveFlags();
             end
+            self.Runs.Validate();
+            Runs_Validated = ~all(horzcat(self.Runs(:).Validated_Flag));
             
-            Flags = [NoRunsFlag,OutgassingLengthWrongFlag,SameFileFlag,RunFilesFlag,RegionFilesFlag];
+            Flags = [NoRunsFlag,OutgassingLengthWrongFlag,SameFileFlag,RunFilesFlag,RegionFilesFlag,Runs_Validated];
             if any(Flags);
                 self.ValidatedFlag = 0;
             else            
                 self.ValidatedFlag = 1;
             end
         end
-        function ValidateRuns(self,Gui);
-            for RunIndex = 1:numel(self.Runs);
-                for ChunkIndex = 1:numel(self.Runs(RunIndex).Chunks);
-                    if ChunkIndex == numel(self.Runs(RunIndex).Chunks);
-                        break;
-                    else
-                        TimeOutEnd = self.Runs(RunIndex).Chunks(ChunkIndex).TimeOut(2);
-                        TimeOutStart = self.Runs(RunIndex).Chunks(ChunkIndex+1).TimeOut(1);
-                        
-                        if TimeOutStart~=TimeOutEnd;
-                            self.ValidatedFlag = 0;
-                            
-                            if self.UsedGUIFlag;
-                                GUI.UpdateLogBox(["The chunks in Run ",num2str(RunIndex)," are not consecutive"]);
-                            end
-                        end
-                    end
-                end
-            end
-        end        
-        function [SameFileFlag,RunFilesFlag,RegionFilesFlag] = ValidateSaveFlags(self,Gui)   
-            SameFileFlag = 0;
-            RunFilesFlag = 0;
-            RegionFilesFlag = 0;
-            % Whole file
+          
+        function ValidateSaveFlags(self,Gui)
             if self.ShouldSaveFlag;
-                if self.SaveToSameFileFlag;
+                if self.SaveToSameFileFlag; 
+                % Whole file
                     if strcmp(self.Information.Output_File,"");
-                        SameFileFlag = 1;
-                        if self.UsedGUIFlag;
-                            Gui.UpdateLogBox("Save to same file output file is empty");
-                        end
+                        self.ValidatedFlag = 0;
                     end
                 end
-                % Runs
                 if self.SaveToRunFilesFlag;
-                    for Run_Index=1:numel(self.Runs);
-                        if strcmp(self.Runs(Run_Index).Information.Output_File,"");
-                            RunFilesFlag = 1;
-                            if self.UsedGUIFlag;
-                                Gui.UpdateLogBox("Save to run files output file is empty");
-                            end
-                        end
-                    end
+                    self.Runs.ValidateSaveFlags();
                 end
-%                 if all([self.SaveToSameFileFlag,self.SaveToRunFilesFlag,self.SaveToRegionFilesFlag]);
-%                     self.ShouldSaveFlag = 0;
-%                 end
             end
         end
         
@@ -747,11 +713,6 @@ classdef GECCO < handle
             else
                 self.Validate();
             end
-            for Run_Index = 1:numel(self.Runs);
-                RunsValidatedFlags(Run_Index) = self.Runs(Run_Index).Validate();
-            end
-                        
-            self.ValidatedFlag = self.ValidatedFlag && all(RunsValidatedFlags);
             
             if self.ValidatedFlag;
                 profile on;
@@ -891,27 +852,20 @@ classdef GECCO < handle
         end
         function self = RunModelSingleRun(self,Run_Index,Gui);
             self.Information.SortOutFilepath();
-%             for Run_Index = 1:numel(self.Runs);
-                self.Runs(Run_Index).Information.SortOutFilepath();
-%             end
-%             for Run_Index = 1:numel(self.Runs);
-                for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
-                    self.Runs(Run_Index).Regions(Region_Index).Information.SortOutFilepath();
-                end
-%             end
+            self.Runs(Run_Index).Information.SortOutFilepath();
+            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                self.Runs(Run_Index).Regions(Region_Index).Information.SortOutFilepath();
+            end
+            
             if self.UsedGUIFlag;
                 self.Validate(Gui);
             else
                 self.Validate();
             end
-%             for Run_Index = 1:numel(self.Runs);
-                RunsValidatedFlags = self.Runs(Run_Index).Validate();
-%             end
                         
-            self.ValidatedFlag = self.ValidatedFlag && all(RunsValidatedFlags);
+            self.ValidatedFlag
             
             if self.ValidatedFlag;
-%                 profile on;
                 if self.UsedGUIFlag;
                     Gui.ColourBox.BackgroundColor = [1,1,0.5];
                     Gui.UpdateLogBox("Starting model runs...");
@@ -919,124 +873,110 @@ classdef GECCO < handle
                 end
                 
                 self.DeleteExistingFile();
-%                 for Run_Index = 1:numel(self.Runs);
-                    self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.SolverToHandle();
-                    self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.LysoclineSolverToHandle();
-                    self.Runs(Run_Index).Regions(1).Outputs = Output();
-                    self.Runs(Run_Index).Regions(1).Conditions.UpdatePresent();
-                    self.Runs(Run_Index).Regions(1).Conditions.CalculateDependents(self.Runs(end).Chunks(end).Time_In(2));
-                    self.Runs(Run_Index).Regions(1).Information = self.Runs(Run_Index).Information();
-                    if self.SaveToRegionFilesFlag;
-                        self.Runs(Run_Index).Regions(1).Information.Output_File = strcat(self.Runs(Run_Index).Regions(1).Information.Output_File,"_Region_",numstr(1));
-                    end
-%                 end
-                
+                self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.SolverToHandle();
+                self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.LysoclineSolverToHandle();
+                self.Runs(Run_Index).Regions(1).Outputs = Output();
+                self.Runs(Run_Index).Regions(1).Conditions.UpdatePresent();
+                self.Runs(Run_Index).Regions(1).Conditions.CalculateDependents(self.Runs(end).Chunks(end).Time_In(2));
+                self.Runs(Run_Index).Regions(1).Information = self.Runs(Run_Index).Information();
+                if self.SaveToRegionFilesFlag;
+                    self.Runs(Run_Index).Regions(1).Information.Output_File = strcat(self.Runs(Run_Index).Regions(1).Information.Output_File,"_Region_",numstr(1));
+                end
+                    
                 if self.ShouldSaveFlag;
                     self.MakeDimensionMap(Run_Index);
                     if self.SaveToSameFileFlag();
                         self.SelfPrepareNetCDF();
                     end
                     if self.SaveToRunFilesFlag();
-%                         for Run_Index = 1:numel(self.Runs);
                             self.Runs(Run_Index).SelfPrepareNetCDF();
-%                         end
                     end
                     if self.SaveToRegionFilesFlag();
-%                         for Run_Index = 1:numel(self.Runs);
                             for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
                                 self.Runs(Run_Index).Regions(Region_Index).SelfPrepareNetCDF();
                             end
-%                         end
                     end
                 end
                 
 %                 try
                 % Loop for runs
-%                 for Run_Index = 1:numel(self.Runs);
-                    DateTime(1) = datetime('now');
-                    if self.UsedGUIFlag;
-                        Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," starting "," @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
-                    end
+                DateTime(1) = datetime('now');
+                if self.UsedGUIFlag;
+                    Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," starting "," @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
+                end
                     
-                    % Keep a copy of initial
-                    Initials_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions;
-                    
-                    % Preallocate output arrays
-                    DataChunks = cell(1:numel(self.Runs(Run_Index).Chunks));
-                    
-                    % Loop for each chunk
-                    for Chunk_Index = 1:numel(self.Runs(Run_Index).Chunks);
-                        % Apply the relevant perturbations on a per model-run basis
-                        self.Runs(Run_Index).Regions(1).Conditions.Perturb(self.Runs(Run_Index).Regions(1).Conditions.Perturbations.Matrix,Chunk_Index);
-                        
-                        % Create anonymous function
-                        ODEFunc = eval(strcat("@(t,y,y_Sub,y_Meta,Chunk)",self.Runs(Run_Index).Regions(1).Conditions.Functionals.Core,"(t,y,y_Sub,y_Meta,Chunk,self.Runs(Run_Index).Regions(1))"));
-                        
-                        % Run the solver
-                        SolverFunction = str2func(self.Runs(Run_Index).Regions(1).Conditions.Functionals.Solver);
-                        DataChunks{Chunk_Index} = SolverFunction(ODEFunc,self.Runs(Run_Index),Chunk_Index);
-                        
-                        % Reset the initial conditions
-                        if Run_Index~=numel(self.Runs);
-                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
-                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
-                        else
-                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
-                            self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
-                        end
-                    end
-                    
-                    for Chunk_Index = 1:numel(DataChunks);
-                        DataRun{Chunk_Index} = DataChunks{Chunk_Index}{1};
-                        DependentRun{Chunk_Index} = DataChunks{Chunk_Index}{2};
-                        ParameterRun{Chunk_Index} = DataChunks{Chunk_Index}{3};
-                        PICRun{Chunk_Index} = DataChunks{Chunk_Index}{4};
-                    end
-                    
-                    % Assign to model object
-                    self.UnpackData(Run_Index,1,horzcat(DataRun{:}),horzcat(DependentRun{:}));
-                    self.Runs(Run_Index).Regions(1).Conditions.AssignConstants(horzcat(ParameterRun{:}));
-                    self.Runs(Run_Index).Regions(1).Conditions.Presents.Carbon.PIC_Burial = horzcat(PICRun{:});
-                    
-                    if self.UsedGUIFlag;
-                        % Display when run is complete
-                        Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," complete @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
-                    end
-                    
-                    % Save data to one file when each run is done
-                    if self.ShouldSaveFlag;
-                        if self.SaveToSameFileFlag;
-                            self.Runs(Run_Index).Regions(1).Save(self.Information,1,Run_Index);
-                        end
-                        if self.SaveToRunFilesFlag;
-                            self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information,1,1);
-                        end
-                        if self.SaveToRegionFilesFlag;
-                            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
-                                self.Runs(Run_Index).Regions(Region_Index).Save(self.Runs(Run_Index).Regions(Region_Index).Information,Region_Index,Run_Index);
-                            end
-                        end
-                    end
-                                        
-                    % Email
-%                     sendtheemail('ross.whiteford@soton.ac.uk','Model Run Complete',['Your model run saving to ',self.OutputFilepath,' finished at ',char(datetime('now','Format','HH:mm:ss'))])
-%                 end
-%                 catch ME
-%                     self.UpdateLogBox('Error!');
-%                 end
+                % Keep a copy of initial
+                Initials_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions;
                   
+                % Preallocate output arrays
+                DataChunks = cell(1:numel(self.Runs(Run_Index).Chunks));
+                  
+                % Loop for each chunk
+                for Chunk_Index = 1:numel(self.Runs(Run_Index).Chunks);
+                    % Apply the relevant perturbations on a per model-run basis
+                    self.Runs(Run_Index).Regions(1).Conditions.Perturb(self.Runs(Run_Index).Regions(1).Conditions.Perturbations.Matrix,Chunk_Index);
+                        
+                    % Create anonymous function
+                    ODEFunc = eval(strcat("@(t,y,y_Sub,y_Meta,Chunk)",self.Runs(Run_Index).Regions(1).Conditions.Functionals.Core,"(t,y,y_Sub,y_Meta,Chunk,self.Runs(Run_Index).Regions(1))"));
+                       
+                    % Run the solver
+                    SolverFunction = str2func(self.Runs(Run_Index).Regions(1).Conditions.Functionals.Solver);
+                    DataChunks{Chunk_Index} = SolverFunction(ODEFunc,self.Runs(Run_Index),Chunk_Index);
+                        
+                    % Reset the initial conditions
+                    if Run_Index~=numel(self.Runs);
+                        self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
+                        self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
+                    else
+                        self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
+                        self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
+                    end
+                end
+                    
+                for Chunk_Index = 1:numel(DataChunks);
+                    DataRun{Chunk_Index} = DataChunks{Chunk_Index}{1};
+                    DependentRun{Chunk_Index} = DataChunks{Chunk_Index}{2};
+                    ParameterRun{Chunk_Index} = DataChunks{Chunk_Index}{3};
+                    PICRun{Chunk_Index} = DataChunks{Chunk_Index}{4};
+                end
+                    
+                % Assign to model object
+                self.UnpackData(Run_Index,1,horzcat(DataRun{:}),horzcat(DependentRun{:}));
+                self.Runs(Run_Index).Regions(1).Conditions.AssignConstants(horzcat(ParameterRun{:}));
+                self.Runs(Run_Index).Regions(1).Conditions.Presents.Carbon.PIC_Pelagic_Burial = horzcat(PICRun{:});
+                    
+                if self.UsedGUIFlag;
+                    % Display when run is complete
+                    Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," complete @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
+                end
+                    
+                % Save data to one file when each run is done
+                if self.ShouldSaveFlag;
+                    if self.SaveToSameFileFlag;
+                        self.Runs(Run_Index).Regions(1).Save(self.Information,1,Run_Index);
+                    end
+                    if self.SaveToRunFilesFlag;
+                        self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information,1,1);
+                    end
+                    if self.SaveToRegionFilesFlag;
+                        for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                            self.Runs(Run_Index).Regions(Region_Index).Save(self.Runs(Run_Index).Regions(Region_Index).Information,Region_Index,Run_Index);
+                        end
+                    end
+                end
+                    
                 % Print to log box
                 if self.UsedGUIFlag;
                     Gui.UpdateLogBox("Successfully completed model runs!");
                     Gui.ColourBox.BackgroundColor = [0,0.5,0.3];
                 end
-
-%                 profile off;
             end
         end
-        function Job = RunModelOnIridis(self);
+        function [Job,Task] = RunModelOnIridis(self,Cluster);
+            if nargin<2;
             % Create a cluster object
-            Cluster = parcluster;
+                Cluster = parcluster;
+            end
             % Create a job
             Job = createJob(Cluster);
             Additional_Paths = strsplit(genpath('~/Queen_Model/'),':');
@@ -1406,32 +1346,33 @@ classdef GECCO < handle
             self.LoadConstsCallback;
             self.PlotRunSelectorUI.String = strsplit(num2str(1:size(self.Model.Time,3)),' ');
         end
-        function LoadFinal(self,src,event);
-            if isempty(self.FileInputUI.String);
-                self.UpdateLogBox("Please select an input file");
-            elseif isempty(self.Model);
-                self.UpdateLogBox("Please instantiate the model first");
-            else
-                Data = self.LoadData(self.FileInputUI.String);
-                if numel(self.Runs)==size(Data,3);
+        function LoadFinal(self,File);
+%             if isempty(self.Information.Input_File);
+%                 self.UpdateLogBox("Please select an input file");
+%             elseif isempty(self);
+%                 self.UpdateLogBox("Please instantiate the model first");
+%             else
+%                 Data = self.LoadData(self.Information.Input_File);
+%                 if numel(self.Runs)==size(Data,3);
+%                     for RunNumber = 1:numel(self.Runs);
+%                         self.Model.Conditions(RunNumber).Initial.Conditions = Data(:,end,RunNumber);
+%                         Lysocline = self.LoadLysocline(self.FileInputUI.String);
+%                         self.Model.Conditions(RunNumber).Present.Lysocline = Lysocline(end);            
+%                     end
+%                 elseif numel(self.Runs)>size(Data,3);
+%                     for RunNumber = 1:numel(self.Runs);
+%                         self.Model.Conditions.Initial(RunNumber).Conditions = Data(end,:,1);
+%                     end
+%                     self.UpdateLogBox("More runs than initial conditions, used output from run 1");
+%                 elseif numel(self.Runs)<size(Data,3);
                     for RunNumber = 1:numel(self.Runs);
-                        self.Model.Conditions(RunNumber).Initial.Conditions = Data(:,end,RunNumber);
-                        Lysocline = self.LoadLysocline(self.FileInputUI.String);
-                        self.Model.Conditions(RunNumber).Present.Lysocline = Lysocline(end);            
+                        RegionNumber = 1;
+                        self.Runs(RunNumber).Regions(RegionNumber).Conditions.Initials.LoadFinal(File);
+                        self.Runs(RunNumber).Regions(RegionNumber).Conditions.Initials.Deal();
                     end
-                elseif numel(self.Runs)>size(Data,3);
-                    for RunNumber = 1:numel(self.Runs);
-                        self.Model.Conditions.Initial(RunNumber).Conditions = Data(end,:,1);
-                    end
-                    self.UpdateLogBox("More runs than initial conditions, used output from run 1");
-                elseif numel(self.Runs)<size(Data,3);
-                    for RunNumber = 1:numel(self.Runs);
-                        self.Model.Conditions.Initial(RunNumber).Conditions = Data(end,:,RunNumber);
-                    end
-                    self.UpdateLogBox("More initial conditions than runs");
-                end
-                self.Model.Conditions.Deal();
-            end
+%                     self.UpdateLogBox("More initial conditions than runs");
+%                 end
+%             end
         end
         function LoadPerturbations(self,Filename);
             self.Runs(1).Regions(1).Conditions.Perturbations.Load(Filename);

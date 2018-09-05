@@ -9,6 +9,7 @@ classdef Run < handle
         Model
         ModelDirectory
         InstalledModels
+        Validated_Flag
     end
     methods
         % Constructor
@@ -116,23 +117,31 @@ classdef Run < handle
         end
         
         %% Validation
-        function Flag = Validate(self);
-            for ChunkIndex = 1:numel(self.Chunks);
-                if ChunkIndex == numel(self.Chunks);
-                    Flag = 1;
-                    break;
-                else
-                    TimeOutEnd = self.Chunks(ChunkIndex).Time_Out(2);
-                    TimeOutStart = self.Chunks(ChunkIndex+1).Time_Out(1);
-                    
-                    if TimeOutStart~=TimeOutEnd;
-                        Flag = 0;
-                        if nargin>1;
-                             end
+        function Validate(self);
+            for Self_Index = 1:numel(self);
+                for ChunkIndex = 1:numel(self(Self_Index).Chunks);
+                    if ChunkIndex == numel(self(Self_Index).Chunks);
+                        self(Self_Index).Validated_Flag = 1;
+                        break;
+                    else
+                        Time_Out_End = self(Self_Index).Chunks(ChunkIndex).Time_Out(2);
+                        Time_Out_Start = self(Self_Index).Chunks(ChunkIndex+1).Time_Out(1);
+                        
+                        if Time_Out_Start~=Time_Out_End;
+                            self(Self_Index).Validated_Flag = 0;
+                            break;
+                        end
                     end
                 end
             end
-        end        
+        end
+        function Validate_Save_Flags(self);
+            for Self_Index = 1:numel(self);
+                if strcmp(self(Self_Index).Information.Output_File,"");
+                    self(Self_Index).Validated_Flag = 0;
+                end
+            end
+        end
         function Replication_Data = MakeReplicationData(self);
             Replication_Data = self.Regions(1).MakeReplicationData(self);
         end
@@ -333,27 +342,6 @@ classdef Run < handle
             Maximum_Size = self.CellMaximumIterate(Sizes);
         end
         
-%         function SeafloorSizes = GetSeafloorSizes(self);
-%             for Self_Index = 1:numel(self);
-%                 SeafloorSizes{Self_Index} = self(Self_Index).Regions.GetSeafloorSizes();
-%             end
-%         end
-%         function CoreDepthSizes = GetCoreDepthSizes(self);
-%             for Self_Index = 1:numel(self);
-%                 CoreDepthSizes{Self_Index} = self(Self_Index).Regions.GetCoreDepthSizes();
-%             end
-%         end
-%         function OutgassingSizes = GetOutgassingSizes(self);
-%             for Self_Index = 1:numel(self);
-%                 OutgassingSizes{Self_Index} = self(Self_Index).Regions.GetOutgassingSizes();
-%             end
-%         end
-%         function OutgassingGaussianSizes = GetOutgassingGaussianSizes(self);
-%         end
-%         function TimestepSizes = GetTimestepSizes(self);
-%         end
-%         function TimestepSizes = GetOutputTimestepSizes(self);
-%         end
         
         %% Save
         function SelfPrepareNetCDF(self);
