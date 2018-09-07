@@ -505,12 +505,14 @@ classdef GUI < handle;
                     if strcmp(self.CondGroupSelectorUI.String{self.CondGroupSelectorUI.Value},'Carbonate_Chemistry');
                         if strcmp(self.CondSelectorUI.String{self.CondSelectorUI.Value},'Solver');
                             CondTableData = cellstr(self.Gecco.Runs(self.SelectedRun).Regions(1).Conditions.Constants.Carbonate_Chemistry.Available_Solvers)';
+                            self.CondTableUI.ColumnFormat = {CondTableData};
                         elseif strcmp(self.CondSelectorUI.String{self.CondSelectorUI.Value},'Lysocline_Solver');
                             CondTableData = cellstr(self.Gecco.Runs(self.SelectedRun).Regions(1).Conditions.Constants.Carbonate_Chemistry.Available_Lysocline_Solvers)';
+                            self.CondTableUI.ColumnFormat = {CondTableData};
                         else
                             CondTableData = self.Gecco.Runs(self.SelectedRun).Regions(1).Conditions.Constants.(self.CondGroupSelectorUI.String{self.CondGroupSelectorUI.Value}).(self.CondSelectorUI.String{self.CondSelectorUI.Value});
                         end
-                        self.CondTableUI.ColumnFormat = {CondTableData};
+                        %
                     else
                         CondTableData = self.Gecco.Runs(self.SelectedRun).Regions(1).Conditions.Constants.(self.CondGroupSelectorUI.String{self.CondGroupSelectorUI.Value}).(self.CondSelectorUI.String{self.CondSelectorUI.Value});
                     end
@@ -825,7 +827,7 @@ classdef GUI < handle;
                 self.PertTransTableUI.CellSelectionCallback = @self.UpdateSelectedTransient;
                 self.PertTransTableUI.ColumnWidth = {40,40,70,100,40,200};
                 
-                if ~isempty(self.TransMatrix) && size(self.PertMatrix{1},1)>0;
+                if ~isempty(self.TransMatrix) && size(self.TransMatrix{1},1)>0;
                     self.PertTransTableUI.Data = self.TransMatrix{self.SelectedRun};
                 end
             end
@@ -844,6 +846,13 @@ classdef GUI < handle;
                 self.AddPerturbation(src,event);
             else
                 self.AddTransient(src,event);
+            end
+        end
+        function RemoveChange(self,src,event);
+            if strcmp(self.ChangeSelectorUI.String{self.ChangeSelectorUI.Value},'Perturbations');
+                self.RemovePerturbation(src,event);
+            elseif strcmp(self.ChangeSelectorUI.String{self.ChangeSelectorUI.Value},'Transients');
+                self.RemoveTransient(src,event);
             end
         end
         function UpdateSelectedChange(self,src,event);
@@ -1030,9 +1039,10 @@ classdef GUI < handle;
             self.TransMatrix{self.SelectedRun} = [self.TransMatrix{self.SelectedRun};cell(1,6)];
             self.UpdateTransientTable(src,event);
         end
-        function RmTransient(self,src,event);
+        function RemoveTransient(self,src,event);
         % Removes currently selected transient
-            self.TransTableUI.Data = [self.TransTableUI.Data(1:self.TransIndices(1)-1,:);self.TransTableUI.Data((self.TransIndices(1)+1):end,:)];
+            self.TransMatrix{self.SelectedRun} = [self.TransMatrix{self.SelectedRun}(1:self.TransIndices(1)-1,:);self.TransMatrix{self.SelectedRun}((self.TransIndices(1)+1):end,:)];
+            self.UpdateTransientTable(src,event);
         end
         function UpdateSelectedTransient(self,src,event);
         % Stores the currently selected variable
@@ -1050,7 +1060,7 @@ classdef GUI < handle;
             % Updates the data for the variable table
 %             try
                 % If the call comes from the addition of a Chunk
-                if strcmp(src.Tag,'AddChangeButton');
+                if strcmp(src.Tag,'AddChangeButton') || strcmp(src.Tag,'RmChangeButton');
                     self.PertTransTableUI.Data = self.TransMatrix{self.SelectedRun};           
                 elseif strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton');
                     % Just process the second column
@@ -1098,7 +1108,7 @@ classdef GUI < handle;
                     self.PertTransTableUI.ColumnFormat = fmt;
                     self.PertTransTableUI.ColumnEditable = [true,true,true,false,true,true,true];
                 end
-                if ~(strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton') || strcmp(src.Tag,'AddChangeButton'));
+                if ~(strcmp(src.Tag,'TabChange') || strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton') || strcmp(src.Tag,'AddChangeButton') || strcmp(src.Tag,'RmChangeButton'));
                     self.TransMatrix{self.SelectedRun} = src.Data;
                 end
 %                 catch
