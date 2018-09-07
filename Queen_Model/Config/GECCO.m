@@ -715,6 +715,9 @@ classdef GECCO < handle
             end
             
             if self.ValidatedFlag;
+                if self.UsedGUIFlag;
+                    self.ParseTransientData(Gui);
+                end
                 profile on;
                 if self.UsedGUIFlag;
                     Gui.ColourBox.BackgroundColor = [1,1,0.5];
