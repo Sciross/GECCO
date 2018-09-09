@@ -4,7 +4,7 @@ classdef GECCO < handle
         Information@Information
     end
     properties (Hidden=true)
-        ValidatedFlag = 0;
+        Validated_Flag = 0;
         UsedGUIFlag = 0;
         FileExists = 0;
         RunTable
@@ -643,49 +643,39 @@ classdef GECCO < handle
         end
         
         function Validate(self,Gui);
-            self.ValidatedFlag = 0;
+            self.Validated_Flag = 1;
+            
+            self.ValidateGECCO();
+            self.ValidateSaveFlags();
+            self.Runs.Validate();
+            
+            if self.SaveToRunFilesFlag;
+                self.Runs.ValidateSaveFlags();
+            end
+        end
+        function ValidateGECCO(self);
             Max_Outgassing_Tracked = self.Runs(1).Regions(1).Conditions.GetMaxOutgassing(self.Runs(end).Chunks(end).Time_In(2));
             Initial_Outgassing_Length = self.Runs(1).Regions(1).Conditions.GetSizeOf("Initials","Outgassing");
-            NoRunsFlag = 0;
-            OutgassingLengthWrongFlag = 0;
+
             if numel(self.Runs)==0;
-                NoRunsFlag = 1;
+                self.Validated_Flag = 0;
                 if self.UsedGUIFlag;
                     Gui.UpdateLogBox("No run details provided");
                 end
             elseif sum(Max_Outgassing_Tracked==Initial_Outgassing_Length | Initial_Outgassing_Length==0 | Initial_Outgassing_Length==1 | Initial_Outgassing_Length==2)==0;
-                OutgassingLengthWrongFlag = 1;
+                self.Validated_Flag = 0;
                 if self.UsedGUIFlag;
                     Gui.UpdateLogBox(strcat("Initial Outgassing array is the wrong length, should be...",num2str(Max_Outgassing_Tracked)," elements"));
                 end
-            end
-            
-            if self.UsedGUIFlag;
-                [SameFileFlag,RunFilesFlag,RegionFilesFlag] = self.ValidateSaveFlags(Gui);
-            else
-                [SameFileFlag,RunFilesFlag,RegionFilesFlag] = self.ValidateSaveFlags();
-            end
-            self.Runs.Validate();
-            Runs_Validated = ~all(horzcat(self.Runs(:).Validated_Flag));
-            
-            Flags = [NoRunsFlag,OutgassingLengthWrongFlag,SameFileFlag,RunFilesFlag,RegionFilesFlag,Runs_Validated];
-            if any(Flags);
-                self.ValidatedFlag = 0;
-            else            
-                self.ValidatedFlag = 1;
-            end
+            end            
         end
-          
         function ValidateSaveFlags(self,Gui)
             if self.ShouldSaveFlag;
                 if self.SaveToSameFileFlag; 
                 % Whole file
                     if strcmp(self.Information.Output_File,"");
-                        self.ValidatedFlag = 0;
+                        self.Validated_Flag = 0;
                     end
-                end
-                if self.SaveToRunFilesFlag;
-                    self.Runs.ValidateSaveFlags();
                 end
             end
         end
@@ -714,7 +704,7 @@ classdef GECCO < handle
                 self.Validate();
             end
             
-            if self.ValidatedFlag;
+            if self.Validated_Flag;
                 if self.UsedGUIFlag;
                     self.ParseTransientData(Gui);
                 end
@@ -865,10 +855,8 @@ classdef GECCO < handle
             else
                 self.Validate();
             end
-                        
-            self.ValidatedFlag
             
-            if self.ValidatedFlag;
+            if self.Validated_Flag && self.Runs(Run_Index).Validated_Flag;
                 if self.UsedGUIFlag;
                     Gui.ColourBox.BackgroundColor = [1,1,0.5];
                     Gui.UpdateLogBox("Starting model runs...");
@@ -892,10 +880,10 @@ classdef GECCO < handle
                         self.SelfPrepareNetCDF();
                     end
                     if self.SaveToRunFilesFlag();
-                            self.Runs(Run_Index).SelfPrepareNetCDF();
+                        self.Runs(Run_Index).SelfPrepareNetCDF();
                     end
                     if self.SaveToRegionFilesFlag();
-                            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                        for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
                                 self.Runs(Run_Index).Regions(Region_Index).SelfPrepareNetCDF();
                             end
                     end

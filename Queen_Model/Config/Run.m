@@ -135,7 +135,7 @@ classdef Run < handle
                 end
             end
         end
-        function Validate_Save_Flags(self);
+        function ValidateSaveFlags(self);
             for Self_Index = 1:numel(self);
                 if strcmp(self(Self_Index).Information.Output_File,"");
                     self(Self_Index).Validated_Flag = 0;
