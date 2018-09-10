@@ -615,9 +615,9 @@ classdef GUI < handle;
         end
         function LoadCondFinal(self,src,event);
             for Run_Index = 1:numel(self.Gecco.Runs);
-                Region_Index = 1;
-                self.Gecco.Runs(Run_Index).Regions(Region_Index).Conditions.SetInitialMaxOutgassing(self.Gecco.Runs(Run_Index).Chunks.Time_Out(2));
-                self.Gecco.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbonate_Chemistry.Lysocline = [];
+%                 Region_Index = 1;
+%                 self.Gecco.Runs(Run_Index).Regions(Region_Index).Conditions.SetInitialMaxOutgassing(self.Gecco.Runs(Run_Index).Chunks.Time_Out(2));
+%                 self.Gecco.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbonate_Chemistry.Lysocline = [];
             end
             
             File = self.Gecco.Information.Input_File;

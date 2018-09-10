@@ -149,10 +149,10 @@ classdef Initial < matlab.mixin.Copyable
             self.Outgassing_End = self.CalculateOutgassingEnd(Filename);
         end
         function PadOutgassing(self);
-            if self.Outgassing_End-numel(self.Outgassing)>=0;
-                self.Outgassing = padarray(self.Outgassing((self.Outgassing_End+1):end),self.Outgassing_End-numel(self.Outgassing((self.Outgassing_End+1):end)),'post');
+            if self.Outgassing_Maximum-numel(self.Outgassing((self.Outgassing_End+1):end))>=0;
+                self.Outgassing = padarray(self.Outgassing((self.Outgassing_End+1):end),self.Outgassing_Maximum-numel(self.Outgassing((self.Outgassing_End+1):end)),'post');
             else
-                self.Outgassing = self.Outgassing((numel(self.Outgassing)-self.Outgassing_End+1):end);
+                self.Outgassing = self.Outgassing((numel(self.Outgassing)-self.Outgassing_Maximum+1):end);
             end
         end
         

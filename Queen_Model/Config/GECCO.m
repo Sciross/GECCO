@@ -1356,10 +1356,12 @@ classdef GECCO < handle
 %                     end
 %                     self.UpdateLogBox("More runs than initial conditions, used output from run 1");
 %                 elseif numel(self.Runs)<size(Data,3);
-                    for RunNumber = 1:numel(self.Runs);
-                        RegionNumber = 1;
-                        self.Runs(RunNumber).Regions(RegionNumber).Conditions.Initials.LoadFinal(File);
-                        self.Runs(RunNumber).Regions(RegionNumber).Conditions.Initials.Deal();
+                    for Run_Index = 1:numel(self.Runs);
+                        Region_Index = 1;
+                        self.Runs(Run_Index).Regions(Region_Index).Conditions.SetInitialMaxOutgassing(self.Runs(Run_Index).Chunks.Time_Out(2));
+                        self.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbonate_Chemistry.Lysocline = [];
+                        self.Runs(Run_Index).Regions(Region_Index).Conditions.Initials.LoadFinal(File);
+                        self.Runs(Run_Index).Regions(Region_Index).Conditions.Initials.Undeal();
                     end
 %                     self.UpdateLogBox("More initial conditions than runs");
 %                 end
