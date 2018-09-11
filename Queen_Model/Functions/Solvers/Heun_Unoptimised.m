@@ -39,7 +39,9 @@ function [Compiled_Outputs,Flag_Out] = Heun_Unoptimised(ODE,Run,Chunk_Number);
     end
     
     % Run once to update present conditions ### WHY?
-    ODE(0,Initial_Conditions,Initial_Seafloor,Initial_Outgassing,Chunk_Number);
+    if Chunk_Number==1;
+        ODE(0,Initial_Conditions,Initial_Seafloor,Initial_Outgassing,Chunk_Number);
+    end
     
     if ~TransientsEmpty_Flag;
         for Parameter_Number = 1:size(Run.Regions(1).Conditions.Transients.Matrix,1);
