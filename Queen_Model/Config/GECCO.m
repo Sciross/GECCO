@@ -707,6 +707,8 @@ classdef GECCO < handle
             if self.Validated_Flag;
                 if self.UsedGUIFlag;
                     self.ParseTransientData(Gui);
+                else
+                    self.ParseTransientData();
                 end
                 profile on;
                 if self.UsedGUIFlag;
@@ -1173,9 +1175,9 @@ classdef GECCO < handle
                     end
                 end
             else
-                for Run_Index = 1:numel(Gui.TransMatrix);
+                for Run_Index = 1:numel(self.Runs);
                     for Region_Index = 1;
-                        self.Runs(Run_Index).Regions(Region_Index).Conditions.Transients.UndealTransientMatrix();
+                        self.Runs(Run_Index).Regions(Region_Index).Conditions.Transients.UndealMatrix();
                     end
                 end
             end

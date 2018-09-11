@@ -261,7 +261,7 @@ classdef Condition < matlab.mixin.Copyable
                 Transient_Names = self.Transients.GetNames();
                 for Parameter = 1:size(Transient_Names,1);
                     self.Presents.(Transient_Names{Parameter,1}).(Transient_Names{Parameter,2}) = [];
-                    self.Presents.(Transient_Names{Parameter,1}).(Transient_Names{Parameter,2})(self.Transients.Matrix{Parameter,4},:) = Transients_Data{Parameter};
+                    self.Presents.(Transient_Names{Parameter,1}).(Transient_Names{Parameter,2})(self.Transients.Matrix{Parameter,4},:) = horzcat(Transients_Data{Parameter,:});
                 end
             end
         end
