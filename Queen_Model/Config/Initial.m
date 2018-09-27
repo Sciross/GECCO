@@ -171,6 +171,7 @@ classdef Initial < matlab.mixin.Copyable
                 self.(Properties{Properties_Index}) = self.LoadIndividualFull(Filename,Properties{Properties_Index},{":","end",":",":"});
             end
             self.SetOutgassingEnd(Filename);
+%             self.SetOutgassingRequiredEnd();
             self.PadOutgassing();
             
         end

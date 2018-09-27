@@ -209,12 +209,10 @@ function [dy,dy_Sub,dy_Outgas] = Core(t,y,y_Sub,y_Outgas,Chunk_Number,Model)
     %% Assign Globals
     Model.Conditions.Presents.Carbon.Riverine_Carbon = (2*(Silicate_Weathering+sum(Carbonate_Weathering)))./Model.Conditions.Presents.Architecture.Riverine_Volume;
     Model.Conditions.Presents.Carbon.Riverine_Alkalinity =(2*(Silicate_Weathering+sum(Carbonate_Weathering)))./Model.Conditions.Presents.Architecture.Riverine_Volume;
-
+    
+    Model.Conditions.Presents.Phosphate.Riverine_Concentration = (Silicate_Weathering.*Model.Conditions.Presents.Phosphate.Proportionality_To_Silicate)./Model.Conditions.Presents.Architecture.Riverine_Volume;
+    
     if any(isnan(y_Sub)) || any(y_Sub<0) || any(isnan(dy)) || any(y(1:8)<0) || any(~isreal(dy));
       error('Something broke');
     end
-    
-%     Change_In_Phosphate = ((y(13)./Model.Conditions.Initials.Silicate_Weathering_Fraction)-1)*Model.Conditions.Presents.Phosphate.Riverine_Concentration;
-    Model.Conditions.Presents.Phosphate.Riverine_Concentration = (Silicate_Weathering.*Model.Conditions.Presents.Phosphate.Proportionality_To_Silicate)./Model.Conditions.Presents.Architecture.Riverine_Volume;
-    %     Model.Conditions.Presents.Phosphate.Riverine_Concentration = Model.Conditions.Constants.Phosphate.Riverine_Concentration*(y(13)./Model.Conditions.Initials.Silicate_Weathering_Fraction);
 end

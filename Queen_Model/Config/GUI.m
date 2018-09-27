@@ -622,6 +622,7 @@ classdef GUI < handle;
             
             File = self.Gecco.Information.Input_File;
             if ~strcmp(File,"");
+                self.Gecco.Runs(self.SelectedRun).Regions.Conditions.SetInitialMaxOutgassing(self.Gecco.Runs(Run_Index).Chunks(end).Time_Out(2));
                 self.Gecco.Runs(self.SelectedRun).Regions.Conditions.(self.CondTypeSelectorUI.String{self.CondTypeSelectorUI.Value}).LoadFinal(File);
             else
                 self.UpdateLogBox("File input is empty");

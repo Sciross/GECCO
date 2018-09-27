@@ -187,6 +187,7 @@ classdef Condition < matlab.mixin.Copyable
             % Outgassing
             Max_Outgassing = self.GetMaxOutgassing(Run_End);
             
+            self.Initials.Outgassing_Maximum = Max_Outgassing;
             if self.Constants.Outgassing.Spread==0;
                 self.Presents.Outgassing.Gauss = 0;
             else
