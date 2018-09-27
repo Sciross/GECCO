@@ -378,21 +378,27 @@ classdef GECCO < handle
             
             TransGrpID = netcdf.inqNcid(FileID,'Transients');
             for Run_Index = 1:numel(Transient_Matrices);
-                for Transient_Index = 1:size(Transient_Matrices{Run_Index},1);                    
-                    VarGrpID = netcdf.inqNcid(TransGrpID,Transient_Matrices{Run_Index}{Transient_Index,2});
-                    
-                    % First define the variable  
-                    CurrentDims = {'u_1','u_2','r','R'};
-                    netcdf.reDef(FileID);
-                    VarID = netcdf.defVar(VarGrpID,[Transient_Matrices{Run_Index}{Transient_Index,3}],'char',GECCO.DimToDimID(FileID,CurrentDims));
-                    netcdf.endDef(FileID);
-                    
-                    Transient_Char = GECCO.CharacterifyCells(Transient_Matrices{Run_Index}(Transient_Index,:));
-                    Transient_Required = Transient_Char([1,4,5]);
-                    Transient_Joined = join(Transient_Required,'\t');
-                    Start = [0,0,0,Run_Index-1];
-                    Count = [1,numel(Transient_Joined{1}),1,1];
-                    netcdf.putVar(VarGrpID,VarID,Start,Count,Transient_Joined{1});
+                Transients_Done = string();
+                for Transient_Index = 1:size(Transient_Matrices{Run_Index},1);
+                    if ~any(strcmp(strcat(Transient_Matrices{Run_Index}{Transient_Index,2},Transient_Matrices{Run_Index}{Transient_Index,3}),Transients_Done));
+                        VarGrpID = netcdf.inqNcid(TransGrpID,Transient_Matrices{Run_Index}{Transient_Index,2});
+                        
+                        % First define the variable
+                        CurrentDims = {'u_1','u_2','r','R'};
+                        netcdf.reDef(FileID);
+                        VarID = netcdf.defVar(VarGrpID,[Transient_Matrices{Run_Index}{Transient_Index,3}],'char',GECCO.DimToDimID(FileID,CurrentDims));
+                        netcdf.endDef(FileID);
+                        
+                        Transient_Char = GECCO.CharacterifyCells(Transient_Matrices{Run_Index}(Transient_Index,:));
+                        Transient_Required = Transient_Char([1,4,5]);
+                        Transient_Joined = join(Transient_Required,'\t');
+                        Start = [0,0,0,Run_Index-1];
+                        Count = [1,numel(Transient_Joined{1}),1,1];
+                        netcdf.putVar(VarGrpID,VarID,Start,Count,Transient_Joined{1});
+                        
+                        
+                        Transients_Done = [Transients_Done;strcat(Transient_Matrices{Run_Index}{Transient_Index,2},Transient_Matrices{Run_Index}{Transient_Index,3})];
+                    end
                 end
             end
             
@@ -759,7 +765,9 @@ classdef GECCO < handle
                         
                         % Keep a copy of initial
                         Initials_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions;
-                        
+                        Initials_Seafloor_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Seafloor;
+                        Initials_Outgassing_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Outgassing;
+
                         % Preallocate output arrays
                         DataChunks = cell(1:numel(self.Runs(Run_Index).Chunks));
                         DataRun = cell(0);
@@ -780,12 +788,16 @@ classdef GECCO < handle
                             [DataChunks{Chunk_Index},Chunk_Flag] = SolverFunction(ODEFunc,self.Runs(Run_Index),Chunk_Index);
                             
                             % Reset the initial conditions
-                            if Run_Index~=numel(self.Runs) & Chunk_Flag;
+                            if Chunk_Index~=numel(self.Runs(Run_Index).Chunks) & Chunk_Flag;
                                 self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
                                 self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
+                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Seafloor = self.Runs(Run_Index).Regions.Outputs.Seafloor;
+                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Outgassing = self.Runs(Run_Index).Regions.Outputs.Outgassing;
                             else
                                 self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
                                 self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
+                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Seafloor = Initials_Seafloor_Copy;
+                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Outgassing = Initials_Outgassing_Copy;
                             end
                             
                             if ~Chunk_Flag;
@@ -1360,7 +1372,7 @@ classdef GECCO < handle
 %                 elseif numel(self.Runs)<size(Data,3);
                     for Run_Index = 1:numel(self.Runs);
                         Region_Index = 1;
-                        self.Runs(Run_Index).Regions(Region_Index).Conditions.SetInitialMaxOutgassing(self.Runs(Run_Index).Chunks.Time_Out(2));
+                        self.Runs(Run_Index).Regions(Region_Index).Conditions.SetInitialMaxOutgassing(self.Runs(Run_Index).Chunks(end).Time_Out(2));
                         self.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbonate_Chemistry.Lysocline = [];
                         self.Runs(Run_Index).Regions(Region_Index).Conditions.Initials.LoadFinal(File);
                         self.Runs(Run_Index).Regions(Region_Index).Conditions.Initials.Undeal();

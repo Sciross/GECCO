@@ -16,4 +16,6 @@ function Phosphate = DefinePhosphateParameters(Phosphate);
     Phosphate.Neritic_Remineralisation = [Neritic_Surface_Remin;0];
     Phosphate.Pelagic_Remineralisation = [SurfaceRemin;DeepRemin];
     Phosphate.Productivity_Split = [0.5;0.5];
+    
+    Phosphate.Proportionality_To_Silicate = 1/100;
 end

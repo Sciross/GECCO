@@ -80,14 +80,14 @@ function [Compiled_Outputs,Flag_Out] = Heun_Unoptimised(ODE,Run,Chunk_Number);
                 Cores(:,1) = Initial_Seafloor(1001-(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths/10));
             end
             
-            if Outputs(18,Place)<-5;
-                Edge_Box_Fill = 1+rem(Outputs(18,Place)+5,10)/10;
+            if Outputs(17,Place)<-5;
+                Edge_Box_Fill = 1+rem(Outputs(17,Place)+5,10)/10;
             else
-                Edge_Box_Fill = rem(Outputs(18,Place)+5,10)/10;
+                Edge_Box_Fill = rem(Outputs(17,Place)+5,10)/10;
             end
             
             OceanArray = double(Run.Regions(1).Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(Outputs(17,Place)));
-            OceanArray(1001-round(Outputs(18,Place)/10)) = Edge_Box_Fill;
+            OceanArray(1001-round(Outputs(17,Place)/10)) = Edge_Box_Fill;
             
             Seafloor_Total(2,Place) = sum((1-OceanArray).*(Temporary_Seafloor_1).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure);
             
@@ -122,14 +122,14 @@ function [Compiled_Outputs,Flag_Out] = Heun_Unoptimised(ODE,Run,Chunk_Number);
                         Cores(:,Place) = Temporary_Seafloor_2(1001-(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths/10));
                     end
                     
-                    if Outputs(18,Place)<-5;
-                        Edge_Box_Fill = 1+rem(Outputs(18,Place)+5,10)/10;
+                    if Outputs(17,Place)<-5;
+                        Edge_Box_Fill = 1+rem(Outputs(17,Place)+5,10)/10;
                     else
-                        Edge_Box_Fill = rem(Outputs(18,Place)+5,10)/10;
+                        Edge_Box_Fill = rem(Outputs(17,Place)+5,10)/10;
                     end
                     
                     OceanArray = double(Run.Regions(1).Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(Outputs(17,Place)));
-                    OceanArray(1001-round(Outputs(18,Place)/10)) = Edge_Box_Fill;
+                    OceanArray(1001-round(Outputs(17,Place)/10)) = Edge_Box_Fill;
                     
                     Seafloor_Total(2,Place) = sum((1-OceanArray).*(Temporary_Seafloor_2).*Run.Regions(1).Conditions.Presents.Weathering.Carbonate_Exposure);
                     
@@ -150,7 +150,7 @@ function [Compiled_Outputs,Flag_Out] = Heun_Unoptimised(ODE,Run,Chunk_Number);
                 Temporary_Outgassing_1 = Temporary_Outgassing_2;
             end
         catch Error_Object
-            if ~isnan(Cores);
+            if ~isnan(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths);
                 Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH;Cores],Transients,PIC_Burial};
             else
                 Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH],Transients,PIC_Burial};
@@ -164,7 +164,7 @@ function [Compiled_Outputs,Flag_Out] = Heun_Unoptimised(ODE,Run,Chunk_Number);
         error("The input and output times are not aligned. Output spacing must be a multiple of solver spacing, and must start at the same time.");
     end
     
-    if ~isnan(Cores);
+    if ~isnan(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths);
         Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH;Cores],Transients,PIC_Burial};
     else
         Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH],Transients,PIC_Burial};
