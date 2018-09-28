@@ -33,8 +33,7 @@ classdef Condition < matlab.mixin.Copyable
                     end
                 end
             end
-        end
-        
+        end        
         function Shallow_Names = GetFirstLevelNames(Input);
             Shallow_Names = string(fieldnames(Input));
         end
@@ -63,8 +62,8 @@ classdef Condition < matlab.mixin.Copyable
         end
     end
     methods
-        % Constructor
         function self = Condition(Constants,Presents,Initials)
+            % Constructor
             % With no input arguments, define default conditions
             if nargin==0;
                 self.Initials = Initial();
@@ -81,13 +80,12 @@ classdef Condition < matlab.mixin.Copyable
                 self.Present = Presents;
             end
         end
-        
-        %% Add Condition
         function self = AddCondition(self,Constant,Initial);
             self = [self,Condition(Constant,[],Initial)];
         end
-        %% Change parameters ##NEEDED?
+        
         function ParamChange(self,Number,varargin);
+        %% Change parameters ##NEEDED?
             for n=1:2:(numel(varargin));
                 for m = 1:numel(Number);
                     % Get fieldname
@@ -115,8 +113,6 @@ classdef Condition < matlab.mixin.Copyable
                 end
             end
         end
-        
-        %% Add values     
         function AddVariable(self,what,number,string)
             self.Variable = [self.Variable;{strsplit(what,'.'),number,str2func(['@(t,Conditions)',string])}];
         end
@@ -124,7 +120,6 @@ classdef Condition < matlab.mixin.Copyable
             self.Variable = [];
         end
         
-        %%
         function Size = GetSizeOf(self,Type,Group,Variable);
             if strcmp(Type,"Presents") || strcmp(Type,"Constants");
             Size = numel(self.(Type).(Group).(Variable));
@@ -137,7 +132,6 @@ classdef Condition < matlab.mixin.Copyable
             end
         end
         
-        %%
         function UpdatePresent(self);
 %             self.Presents = copy(self.Constants);
             self.Presents(1).Architecture = copy(self.Constants.Architecture);
@@ -157,8 +151,8 @@ classdef Condition < matlab.mixin.Copyable
             self.Presents.Carbonate_Chemistry.Depths = self.Presents.Architecture.Ocean_Midpoints;
         end
 
-        %% Perturbation handling
         function Perturb(self,Perturbations,Chunk_Number);
+            %% Perturbation handling
             for Perturbation_Index = 1:size(Perturbations,1);
                 if ~isempty(Perturbations{Perturbation_Index,1}) && (Perturbations{Perturbation_Index,1})==Chunk_Number;
                     if strcmp(Perturbations{Perturbation_Index,2},"Initials");
@@ -173,7 +167,6 @@ classdef Condition < matlab.mixin.Copyable
             self.Initials.Undeal();
         end
                 
-        %%
         function CalculateDependents(self,Run_End);
             % Subduction
             if self.Constants.Seafloor.Subduction_Spread==0;
@@ -239,7 +232,6 @@ classdef Condition < matlab.mixin.Copyable
             self.Initials.Outgassing_Maximum = self.GetMaxOutgassing(Run_End);
         end
         
-        %%
         function AssignConstants(self,Transients_Data);
         % Add constants to Output object
         % Adds the constants to the model object
@@ -267,6 +259,5 @@ classdef Condition < matlab.mixin.Copyable
             
             self.UpdatePresent();
         end
-    end
-        
+    end        
 end
