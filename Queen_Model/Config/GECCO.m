@@ -764,6 +764,7 @@ classdef GECCO < handle
                         end
                         
                         % Keep a copy of initial
+                        self.Runs(Run_Index).Regions(1).Conditions.Initials.Undeal();
                         Initials_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions;
                         Initials_Seafloor_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Seafloor;
                         Initials_Outgassing_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Outgassing;

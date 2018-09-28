@@ -208,38 +208,29 @@ classdef Condition < matlab.mixin.Copyable
             self.Initials.Conditions(13) = self.Initials.Silicate_Weathering_Fraction;
             self.Initials.Conditions(14) = self.Initials.Carbonate_Weathering_Fraction;
 
-            % Weathering
-            Silicate_Weathering = (self.Initials.Conditions(12)*self.Initials.Conditions(13));
-            
+            % Weathering            
             OceanArray = double(self.Presents.Architecture.Hypsometric_Bin_Midpoints<round(self.Initials.Sea_Level));
             
-
+            Silicate_Weathering = (self.Initials.Conditions(12)*self.Initials.Conditions(13));
             Carbonate_Weathering = (1-OceanArray).*(self.Initials.Seafloor.*self.Presents.Weathering.Carbonate_Exposure).*self.Initials.Carbonate_Weathering_Fraction.*self.Presents.Weathering.Carbonate_Weatherability;
 
             Weathering = (Silicate_Weathering*self.Constants.Weathering.Silicate_Weatherability + Carbonate_Weathering*self.Constants.Weathering.Carbonate_Weatherability);
             
+            self.Presents.Phosphate.Riverine_Concentration = ((Silicate_Weathering.*self.Presents.Phosphate.Proportionality_To_Silicate)+(sum(Carbonate_Weathering).*self.Presents.Phosphate.Proportionality_To_Carbonate))./self.Presents.Architecture.Riverine_Volume;
+    
             self.Presents.Carbon.Riverine_Carbon = (2*(Silicate_Weathering+sum(Carbonate_Weathering)))./self.Presents.Architecture.Riverine_Volume;
             self.Presents.Carbon.Riverine_Alkalinity =(2*(Silicate_Weathering+sum(Carbonate_Weathering)))./self.Presents.Architecture.Riverine_Volume;
 
             self.Presents.Carbonate_Chemistry.SetCoefficients();
             self.Presents.Carbonate_Chemistry.SetCCKs();
-%             Coefficients = GetCoefficients(self.Constants.Carbonate_Chemistry);
-%             [self.Presents.CCKs,self.Presents.CCK_Depth_Correction] = GetCCKs(self.Constants.Salinity,self.Initials.Ocean_Temperature,self.Constants.Pressure,self.Constants.Pressure_Correction,Coefficients);
-            
+    
             % pH
             self.Presents.Carbonate_Chemistry.Solve([],1);
-%             [self.Presents.Carbonate_Chemistry.pH,self.Presents.Carbonate_Chemistry.CO2,~,~,self.Presents.Carbonate_Chemistry.Saturation_State_C,~] = self.Presents.Carbonate_Chemistry.Solver_Handle(self.Presents.Carbonate_Chemistry.DIC,self.Presents.Carbonate_Chemistry.Alkalinity,{self.Presents.Carbonate_Chemistry.Boron,self.Presents.Carbonate_Chemistry.Silica,NaN,self.Presents.Carbonate_Chemistry.Calcium,self.Presents.Carbonate_Chemistry.Phosphate},(10.^(-[8;8]))*1000,self.Presents.Carbonate_Chemistry.CCKs,1,self.Presents.Carbonate_Chemistry.Tolerance);
-            
-            self.Presents.Carbonate_Chemistry.pH = self.Presents.Carbonate_Chemistry.pH;
             self.Presents.Carbonate_Chemistry.H_In = pH2H(self.Presents.Carbonate_Chemistry.pH);
-%             self.Presents.Carbonate_Chemistry.Lysocline = self.Presents.Carbonate_Chemistry.Lysocline;
 
             % Lysocline
             self.Presents.Carbonate_Chemistry.Solve_Lysocline([],1);
-%             self.Presents.Carbonate_Chemistry.Lysocline = Lysocline_Solver_RegulaFalsi(self.Initials.DIC(2),self.Presents.Architectures.Midpoints,self.Initials.Ocean_Temperature,self.Presents.Salinity,self.Presents.Carbonate_Chemistry.pH,self.Presents.Carbonate_Chemistry.Calcium,[0;10000],1e-6,1);
-%             self.Presents.Carbonate_Chemistry.Lysocline = self.Presents.Carbonate_Chemistry.Lysocline_Solver_Handle(self.Presents.Carbonate_Chemistry.DIC(2),self.Presents.Carbonate_Chemistry.Depths,self.Presents.Carbonate_Chemistry.Temperature,self.Presents.Carbonate_Chemistry.Salinity,self.Presents.Carbonate_Chemistry.pH,self.Presents.Carbonate_Chemistry.Calcium,self.Presents.Carbonate_Chemistry.Coefficients,[0,10000],1,self.Presents.Carbonate_Chemistry.Lysocline_Tolerance);
-            self.Presents.Carbonate_Chemistry.Lysocline_In = self.Presents.Carbonate_Chemistry.Lysocline;
-            
+            self.Presents.Carbonate_Chemistry.Lysocline_In = self.Presents.Carbonate_Chemistry.Lysocline;    
         end
         function Max_Outgassing = GetMaxOutgassing(self,Run_End);
             Max_Outgassing = ceil(((self.Constants.Outgassing.Mean_Lag)+(3.*self.Constants.Outgassing.Spread)+(Run_End))./self.Constants.Outgassing.Temporal_Resolution);
