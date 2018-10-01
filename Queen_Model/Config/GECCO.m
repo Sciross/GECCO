@@ -687,19 +687,23 @@ classdef GECCO < handle
         end
         
         %% Run
-        function RunModel(self,Gui);
+        function RunModel(self,Runs_To_Do,Gui);
+            if nargin<2;
+                Runs_To_Do = 1:numel(self.Runs);
+            end
+            
             self.Information.SortOutFilepath();
-            for Run_Index = 1:numel(self.Runs);
-                self.Runs(Run_Index).Information.SortOutFilepath();
-                for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
-                    self.Runs(Run_Index).Regions(Region_Index).Information.SortOutFilepath();
+            for Run_Index = 1:numel(Runs_To_Do);
+                self.Runs(Runs_To_Do(Run_Index)).Information.SortOutFilepath();
+                for Region_Index = 1:numel(self.Runs(Runs_To_Do(Run_Index)).Regions);
+                    self.Runs(Runs_To_Do(Run_Index)).Regions(Region_Index).Information.SortOutFilepath();
                 end
             end
             
-            for Run_Index = 1:numel(self.Runs);
-                for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
-                    if size(self.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial,2)>1;
-                        self.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial = self.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial(:,end);
+            for Run_Index = 1:numel(Runs_To_Do);
+                for Region_Index = 1:numel(self.Runs(Runs_To_Do(Run_Index)).Regions);
+                    if size(self.Runs(Runs_To_Do(Run_Index)).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial,2)>1;
+                        self.Runs(Runs_To_Do(Run_Index)).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial = self.Runs(Runs_To_Do(Run_Index)).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial(:,end);
                     end
                 end
             end
@@ -724,15 +728,15 @@ classdef GECCO < handle
                 end
                 
                 self.DeleteExistingFile();
-                for Run_Index = 1:numel(self.Runs);
-                    self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.SolverToHandle();
-                    self.Runs(Run_Index).Regions(1).Conditions.Constants.Carbonate_Chemistry.LysoclineSolverToHandle();
-                    self.Runs(Run_Index).Regions(1).Outputs = Output();
-                    self.Runs(Run_Index).Regions(1).Conditions.UpdatePresent();
-                    self.Runs(Run_Index).Regions(1).Conditions.CalculateDependents(self.Runs(end).Chunks(end).Time_In(2));
-                    self.Runs(Run_Index).Regions(1).Information = self.Runs(Run_Index).Information();
+                for Run_Index = 1:numel(Runs_To_Do);
+                    self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Constants.Carbonate_Chemistry.SolverToHandle();
+                    self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Constants.Carbonate_Chemistry.LysoclineSolverToHandle();
+                    self.Runs(Runs_To_Do(Run_Index)).Regions(1).Outputs = Output();
+                    self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.UpdatePresent();
+                    self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.CalculateDependents(self.Runs(end).Chunks(end).Time_In(2));
+                    self.Runs(Runs_To_Do(Run_Index)).Regions(1).Information = self.Runs(Runs_To_Do(Run_Index)).Information();
                     if self.SaveToRegionFilesFlag;
-                        self.Runs(Run_Index).Regions(1).Information.Output_File = strcat(self.Runs(Run_Index).Regions(1).Information.Output_File,"_Region_",numstr(1));
+                        self.Runs(Runs_To_Do(Run_Index)).Regions(1).Information.Output_File = strcat(self.Runs(Runs_To_Do(Run_Index)).Regions(1).Information.Output_File,"_Region_",numstr(1));
                     end
                 end
                 
@@ -742,14 +746,14 @@ classdef GECCO < handle
                         self.SelfPrepareNetCDF();
                     end
                     if self.SaveToRunFilesFlag();
-                        for Run_Index = 1:numel(self.Runs);
-                            self.Runs(Run_Index).SelfPrepareNetCDF();
+                        for Run_Index = 1:numel(Runs_To_Do);
+                            self.Runs(Runs_To_Do(Run_Index)).SelfPrepareNetCDF();
                         end
                     end
                     if self.SaveToRegionFilesFlag();
-                        for Run_Index = 1:numel(self.Runs);
-                            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
-                                self.Runs(Run_Index).Regions(Region_Index).SelfPrepareNetCDF();
+                        for Run_Index = 1:numel(Runs_To_Do);
+                            for Region_Index = 1:numel(self.Runs(Runs_To_Do(Run_Index)).Regions);
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(Region_Index).SelfPrepareNetCDF();
                             end
                         end
                     end
@@ -757,48 +761,48 @@ classdef GECCO < handle
                 
 %                 try
                     % Loop for runs
-                    for Run_Index = 1:numel(self.Runs);
+                    for Run_Index = 1:numel(Runs_To_Do);
                         DateTime(1) = datetime('now');
                         if self.UsedGUIFlag;
-                            Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," starting "," @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
+                            Gui.UpdateLogBox(strcat("Run number ",num2str(Runs_To_Do(Run_Index))," of ",num2str(numel(Runs_To_Do))," starting "," @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(Runs_To_Do));
                         end
                         
                         % Keep a copy of initial
-                        self.Runs(Run_Index).Regions(1).Conditions.Initials.Undeal();
-                        Initials_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions;
-                        Initials_Seafloor_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Seafloor;
-                        Initials_Outgassing_Copy = self.Runs(Run_Index).Regions(1).Conditions.Initials.Outgassing;
+                        self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Undeal();
+                        Initials_Copy = self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Conditions;
+                        Initials_Seafloor_Copy = self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Seafloor;
+                        Initials_Outgassing_Copy = self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Outgassing;
 
                         % Preallocate output arrays
-                        DataChunks = cell(1:numel(self.Runs(Run_Index).Chunks));
+                        DataChunks = cell(1:numel(self.Runs(Runs_To_Do(Run_Index)).Chunks));
                         DataRun = cell(0);
                         DependentRun = cell(0);
                         ParameterRun = cell(0);
                         PICRun = cell(0);
                         
                         % Loop for each chunk
-                        for Chunk_Index = 1:numel(self.Runs(Run_Index).Chunks);
+                        for Chunk_Index = 1:numel(self.Runs(Runs_To_Do(Run_Index)).Chunks);
                             % Apply the relevant perturbations on a per model-run basis
-                            self.Runs(Run_Index).Regions(1).Conditions.Perturb(self.Runs(Run_Index).Regions(1).Conditions.Perturbations.Matrix,Chunk_Index);
+                            self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Perturb(self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Perturbations.Matrix,Chunk_Index);
                             
                             % Create anonymous function
-                            ODEFunc = eval(strcat("@(t,y,y_Sub,y_Meta,Chunk)",self.Runs(Run_Index).Regions(1).Conditions.Functionals.Core,"(t,y,y_Sub,y_Meta,Chunk,self.Runs(Run_Index).Regions(1))"));
+                            ODEFunc = eval(strcat("@(t,y,y_Sub,y_Meta,Chunk)",self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Functionals.Core,"(t,y,y_Sub,y_Meta,Chunk,self.Runs(Runs_To_Do(Run_Index)).Regions(1))"));
                             
                             % Run the solver
-                            SolverFunction = str2func(self.Runs(Run_Index).Regions(1).Conditions.Functionals.Solver);
-                            [DataChunks{Chunk_Index},Chunk_Flag] = SolverFunction(ODEFunc,self.Runs(Run_Index),Chunk_Index);
+                            SolverFunction = str2func(self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Functionals.Solver);
+                            [DataChunks{Chunk_Index},Chunk_Flag] = SolverFunction(ODEFunc,self.Runs(Runs_To_Do(Run_Index)),Chunk_Index);
                             
                             % Reset the initial conditions
-                            if Chunk_Index~=numel(self.Runs(Run_Index).Chunks) & Chunk_Flag;
-                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
-                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
-                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Seafloor = self.Runs(Run_Index).Regions.Outputs.Seafloor;
-                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Outgassing = self.Runs(Run_Index).Regions.Outputs.Outgassing;
+                            if Chunk_Index~=numel(self.Runs(Runs_To_Do(Run_Index)).Chunks) & Chunk_Flag;
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Conditions = DataChunks{Chunk_Index}{1}(:,end);
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Deal();
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Seafloor = self.Runs(Runs_To_Do(Run_Index)).Regions.Outputs.Seafloor;
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Outgassing = self.Runs(Runs_To_Do(Run_Index)).Regions.Outputs.Outgassing;
                             else
-                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
-                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Deal();
-                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Seafloor = Initials_Seafloor_Copy;
-                                self.Runs(Run_Index).Regions(1).Conditions.Initials.Outgassing = Initials_Outgassing_Copy;
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Conditions = Initials_Copy;
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Deal();
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Seafloor = Initials_Seafloor_Copy;
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Initials.Outgassing = Initials_Outgassing_Copy;
                             end
                             
                             if ~Chunk_Flag;
@@ -814,26 +818,26 @@ classdef GECCO < handle
                         end
                         
                         % Assign to model object
-                        self.UnpackData(Run_Index,1,horzcat(DataRun{:}),horzcat(DependentRun{:}));
-                        self.Runs(Run_Index).Regions(1).Conditions.AssignConstants(horzcat(ParameterRun{:}));
-                        self.Runs(Run_Index).Regions(1).Conditions.Presents.Carbon.PIC_Pelagic_Burial = horzcat(PICRun{:});
+                        self.UnpackData(Runs_To_Do(Run_Index),1,horzcat(DataRun{:}),horzcat(DependentRun{:}));
+                        self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.AssignConstants(horzcat(ParameterRun{:}));
+                        self.Runs(Runs_To_Do(Run_Index)).Regions(1).Conditions.Presents.Carbon.PIC_Pelagic_Burial = horzcat(PICRun{:});
                         
                         if self.UsedGUIFlag;
                             % Display when run is complete
-                            Gui.UpdateLogBox(strcat("Run number ",num2str(Run_Index)," of ",num2str(numel(self.Runs))," complete @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(self.Runs));
+                            Gui.UpdateLogBox(strcat("Run number ",num2str(Runs_To_Do(Run_Index))," of ",num2str(numel(Runs_To_Do))," complete @ ",string(datetime('now','Format','HH:mm:ss'))),1:numel(Runs_To_Do));
                         end
                         
                         % Save data to one file when each run is done
                         if self.ShouldSaveFlag;
                             if self.SaveToSameFileFlag;
-                                self.Runs(Run_Index).Regions(1).Save(self.Information,1,Run_Index);
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Save(self.Information,1,Runs_To_Do(Run_Index));
                             end
                             if self.SaveToRunFilesFlag;
-                                self.Runs(Run_Index).Regions(1).Save(self.Runs(Run_Index).Information,1,1);
+                                self.Runs(Runs_To_Do(Run_Index)).Regions(1).Save(self.Runs(Runs_To_Do(Run_Index)).Information,1,1);
                             end
                             if self.SaveToRegionFilesFlag;
-                                for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
-                                    self.Runs(Run_Index).Regions(Region_Index).Save(self.Runs(Run_Index).Regions(Region_Index).Information,Region_Index,Run_Index);
+                                for Region_Index = 1:numel(self.Runs(Runs_To_Do(Run_Index)).Regions);
+                                    self.Runs(Runs_To_Do(Run_Index)).Regions(Region_Index).Save(self.Runs(Runs_To_Do(Run_Index)).Regions(Region_Index).Information,Region_Index,Runs_To_Do(Run_Index));
                                 end
                             end
                         end
@@ -844,6 +848,10 @@ classdef GECCO < handle
 %                 catch ME
 %                     if self.UsedGUIFlag;
 %                         Gui.UpdateLogBox('Error!');
+%                         profile off
+%                         return
+%                     else
+%                         disp('Error!');
 %                         profile off
 %                         return
 %                     end
