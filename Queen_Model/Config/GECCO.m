@@ -865,6 +865,12 @@ classdef GECCO < handle
                 self.Runs(Run_Index).Regions(Region_Index).Information.SortOutFilepath();
             end
             
+            for Region_Index = 1:numel(self.Runs(Run_Index).Regions);
+                if size(self.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial,2)>1;
+                    self.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial = self.Runs(Run_Index).Regions(Region_Index).Conditions.Constants.Carbon.PIC_Pelagic_Burial(:,end);
+                end
+            end
+            
             if self.UsedGUIFlag;
                 self.Validate(Gui);
             else

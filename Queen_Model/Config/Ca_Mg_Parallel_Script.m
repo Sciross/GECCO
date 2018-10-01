@@ -1,5 +1,5 @@
-Calcium_Change_Times = 5e5:1e5:7e5;
-Magnesium_Change_Times = 9e5;
+Calcium_Change_Times = 10e6:10e6:60e6;
+Magnesium_Change_Times = 10e6;
 Calcium_At_Change = 20:-2:10;
 Magnesium_At_Change = 50;
 
@@ -9,13 +9,13 @@ Calcium_End = 10;
 Magnesium_Start = 30;
 Magnesium_End = 50;
                 
-Run_Length = 1e6;
+Run_Length = 70e6;
 
-% Upload 600ppm_5 before running
+% Upload 600ppm_14 before running
 
 % Set up cluster
 Cluster = parcluster();
-Cluster.SubmitArguments = '-l walltime=00:10:00';
+Cluster.SubmitArguments = '-l walltime=10:00:00';
 
 for Magnesium_Time_Index = 1:numel(Magnesium_Change_Times);
     for Magnesium_Change_Index = 1:numel(Magnesium_At_Change);
@@ -41,7 +41,9 @@ for Magnesium_Time_Index = 1:numel(Magnesium_Change_Times);
                 Gecco.Runs(Calcium_Change_Index).Chunks(2).Time_In(2) = Run_Length;
                 Gecco.Runs(Calcium_Change_Index).Chunks(2).Time_Out(2) = Run_Length;
                 
-                Gecco.LoadFinal("/home/rw12g11/600ppm_5.nc");
+                File = "/home/rw12g11/600ppm_14_Short.nc";
+                Gecco.LoadFinal(File);
+                Gecco.Runs(Calcium_Change_Index).Regions.Conditions.Constants.Load(File);
                 
                 % CREATE THE DIRECTORY BEFORE RUNNING
                 Gecco.Runs(Calcium_Change_Index).Information.Output_Filepath = "/scratch/rw12g11/Ca_Mg_Ensemble";

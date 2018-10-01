@@ -16,7 +16,7 @@ classdef ParameterLoad < handle
             try
                 VarID = netcdf.inqVarID(ParamSubGrpID,Individual);
             catch
-                warning(strcat("Parameter '",string(Individual),"' not found"));
+%                 warning(strcat("Parameter '",string(Individual),"' not found"));
                 Retrieved_Data = [];
                 return;
             end
