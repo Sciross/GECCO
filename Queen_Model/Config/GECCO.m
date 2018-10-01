@@ -1006,7 +1006,7 @@ classdef GECCO < handle
             
             % Create tasks
             for Run_Index = 1:numel(self.Runs);
-                Task{Run_Index} = createTask(Job,@self.RunModelSingleRun,1,{Run_Index});
+                Task{Run_Index} = createTask(Job,@self.RunModel,0,{Run_Index});
             end
             
             submit(Job);
