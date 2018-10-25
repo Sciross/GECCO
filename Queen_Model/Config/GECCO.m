@@ -741,7 +741,7 @@ classdef GECCO < handle
                 end
                 
                 if self.ShouldSaveFlag;
-                    self.MakeDimensionMap();
+                    self.MakeDimensionMap(Runs_To_Do(Run_Index));
                     if self.SaveToSameFileFlag();
                         self.SelfPrepareNetCDF();
                     end
@@ -843,7 +843,7 @@ classdef GECCO < handle
                         end
                         
                         % Email
-                        sendtheemail('ross.whiteford@soton.ac.uk','Model Run Complete',['Your model run finished at ',char(datetime('now','Format','HH:mm:ss'))])
+%                         sendtheemail('ross.whiteford@soton.ac.uk','Model Run Complete',['Your model run finished at ',char(datetime('now','Format','HH:mm:ss'))])
                     end
 %                 catch ME
 %                     if self.UsedGUIFlag;
