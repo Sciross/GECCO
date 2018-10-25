@@ -1,4 +1,4 @@
-function Lysocline_Out = Lysocline_Solver_RegulaFalsi(DIC,Midpoints,Temperature,Salinity,pH,Calcium,Coefficients,Lysocline_In,Iteration_Flag,Tolerance);
+function Lysocline_Out = Lysocline_Solver_Regula_Falsi(DIC,Midpoints,Temperature,Salinity,pH,Calcium,Coefficients,Lysocline_In,Iteration_Flag,Tolerance);
 %% CalculateLysocline calculates lysocline depth
 % Of the form:
 % Lysocline Depth - Logic
