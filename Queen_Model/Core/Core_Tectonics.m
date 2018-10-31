@@ -153,7 +153,11 @@ function [dy,dy_Sub,dy_Outgas] = Core_Tectonics(t,y,y_Sub,y_Outgas,Chunk_Number,
 
     %% Outgassing
     Outgassing_Added = sum(Carbonate_Subducted);
-    OutBoxes = floor((t+Model.Conditions.Presents.Outgassing.Mean_Lag)/Model.Conditions.Presents.Outgassing.Temporal_Resolution)+[-(numel(Model.Conditions.Presents.Outgassing.Gauss)-1)/2,(numel(Model.Conditions.Presents.Outgassing.Gauss)-1)/2];
+    if ~mod(numel(Model.Conditions.Presents.Outgassing.Gauss),2); %Even
+        OutBoxes = floor((t+Model.Conditions.Presents.Outgassing.Mean_Lag)/Model.Conditions.Presents.Outgassing.Temporal_Resolution)+[-(numel(Model.Conditions.Presents.Outgassing.Gauss)-2)/2,(numel(Model.Conditions.Presents.Outgassing.Gauss))/2];
+    else % Odd
+        OutBoxes = floor((t+Model.Conditions.Presents.Outgassing.Mean_Lag)/Model.Conditions.Presents.Outgassing.Temporal_Resolution)+[-(numel(Model.Conditions.Presents.Outgassing.Gauss)-1)/2,(numel(Model.Conditions.Presents.Outgassing.Gauss)-1)/2];
+    end
     
     dy_Outgas(OutBoxes(1):OutBoxes(2)) = (Outgassing_Added.*Model.Conditions.Presents.Outgassing.Gauss);
     Outgassing = ((y_Outgas(1+floor((t)/Model.Conditions.Presents.Outgassing.Temporal_Resolution))/Model.Conditions.Presents.Outgassing.Temporal_Resolution));
