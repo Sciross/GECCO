@@ -10,7 +10,7 @@ Lag_Start = 2.5e6;
 
 % Set up cluster
 Cluster = parcluster();
-Cluster.SubmitArguments = '-l walltime=12:00:00';
+Cluster.SubmitArguments = '-l walltime=01:00:00';
 
 for Time_Index = 1:numel(Change_Times);
     Gecco = GECCO();
