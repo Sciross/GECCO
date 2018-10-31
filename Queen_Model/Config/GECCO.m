@@ -668,7 +668,7 @@ classdef GECCO < handle
                 if self.UsedGUIFlag;
                     Gui.UpdateLogBox("No run details provided");
                 end
-            elseif sum(Max_Outgassing_Tracked==Initial_Outgassing_Length | Initial_Outgassing_Length==0 | Initial_Outgassing_Length==1 | Initial_Outgassing_Length==2)==0;
+            elseif sum(Max_Outgassing_Tracked<=Initial_Outgassing_Length | Initial_Outgassing_Length==0 | Initial_Outgassing_Length==1 | Initial_Outgassing_Length==2)==0;
                 self.Validated_Flag = 0;
                 if self.UsedGUIFlag;
                     Gui.UpdateLogBox(strcat("Initial Outgassing array is the wrong length, should be...",num2str(Max_Outgassing_Tracked)," elements"));
