@@ -1,16 +1,16 @@
 clear
 
-Change_Times = 10e6;
-Lag_At_Change = 1.5e6:0.5e6:3.5e6;
+Change_Times = 1e6;
+Lag_At_Change = 1.5e6;%:0.5e6:3.5e6;
 
-Run_Length = 70e6;
+Run_Length = 10e6;
 Lag_Start = 2.5e6;
 
 % Upload 600ppm_14_Short before running
 
 % Set up cluster
 Cluster = parcluster();
-% Cluster.SubmitArguments = '-l walltime=12:00:00';
+Cluster.SubmitArguments = '-l walltime=12:00:00';
 
 for Time_Index = 1:numel(Change_Times);
     Gecco = GECCO();
@@ -35,15 +35,19 @@ for Time_Index = 1:numel(Change_Times);
         Gecco.Runs(Lag_Change_Index).Chunks(2).Time_Out(2) = Run_Length;
         
         File = "/home/rw12g11/600ppm_14_Short.nc";
-%         Gecco.LoadFinal(File);
-%         Gecco.Runs(Lag_Change_Index).Regions.Conditions.Constants.Load(File);
-        % Need to add some space
+        Gecco.LoadFinal(File);
+        Gecco.Runs(Lag_Change_Index).Regions.Conditions.Constants.Load(File);
+        
+        % Need to change the core
+        Gecco.Runs(Lag_Change_Index).Regions.Conditions.Functionals.SetCore("Core_Tectonics");
+        
+        % Need to add some outgassing space        
         if Lag_At_Change(Lag_Change_Index)>Lag_Start;
             Gecco.Runs(Lag_Change_Index).Regions.Conditions.Initials.Outgassing = [Gecco.Runs(Lag_Change_Index).Regions.Conditions.Initials.Outgassing;zeros((Lag_At_Change(Lag_Change_Index)-Lag_Start)./Gecco.Runs(Lag_Change_Index).Regions.Conditions.Constants.Outgassing.Temporal_Resolution,1)];
         end
         
         % CREATE THE DIRECTORY BEFORE RUNNING
-        Gecco.Runs(Lag_Change_Index).Information.Output_Filepath = "/scratch/rw12g11/Ca_Mg_Ensemble/10e6";
+        Gecco.Runs(Lag_Change_Index).Information.Output_Filepath = "/scratch/rw12g11/Tectonics_Ensemble/10e6";
         Gecco.Runs(Lag_Change_Index).Information.Output_Filename = strcat("T",num2str(Change_Times(Time_Index)),"CC",num2str(Lag_At_Change(Lag_Change_Index)),".nc");
         
         % Calculations for transients
