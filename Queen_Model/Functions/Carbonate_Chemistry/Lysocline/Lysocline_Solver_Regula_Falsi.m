@@ -8,7 +8,7 @@ function Lysocline_Out = Lysocline_Solver_Regula_Falsi(DIC,Midpoints,Temperature
 % b = log(Fs)/log(Fd*(s/d))
 
 % ##If the input is NaN then the output is always the first midpoint
-
+if ~isempty(Coefficients);
     %% One input = direct, simple calculation
     b = log10(Temperature(1)/Temperature(2))/log10(Midpoints(1)/Midpoints(2));
     Q = Temperature(2)*((1/Midpoints(2)).^b);
@@ -39,7 +39,7 @@ function Lysocline_Out = Lysocline_Solver_Regula_Falsi(DIC,Midpoints,Temperature
                 Lysocline(2) = Lysocline_In(2);
             end
         
-            L = Lysocline(2);            
+            L = Lysocline(2);
             [Eqn(2),~,~] = Lysocline_Calculation_Hain(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);         
         
             L = Lysocline(2)-(Eqn(2).*((Lysocline(2)-Lysocline(1))./(Eqn(2)-Eqn(1))));
@@ -80,6 +80,79 @@ function Lysocline_Out = Lysocline_Solver_Regula_Falsi(DIC,Midpoints,Temperature
     end
 
     Lysocline_Out = L;
+else
+        %% One input = direct, simple calculation
+    b = log10(Temperature(1)/Temperature(2))/log10(Midpoints(1)/Midpoints(2));
+    Q = Temperature(2)*((1/Midpoints(2)).^b);
+    R = 83.131; %or 83.1457
+
+    if any(Lysocline_In<=0);
+        Lysocline_In(Lysocline_In<=0) = 1;
+    end
+    Lysocline = Lysocline_In;
+
+    L = Lysocline(1);
+    [~,Ksp,CaCO3] = Lysocline_Calculation_Zeebe(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
+                    
+    if L<10 && CaCO3<0.5 && numel(Lysocline_In)==1;
+        L = 0;
+    elseif L>9990 && CaCO3>5 && numel(Lysocline_In)==1;
+        L = 10000;
+    else
+        Eqn(1) = Ksp-CaCO3;
+        if (numel(Lysocline_In)>1) || (abs(Eqn(1))>Tolerance);
+            if (numel(Lysocline_In)<2)
+                if Eqn(1)>0;
+                    Lysocline(2) = Lysocline-(Eqn(1)*Lysocline);
+                else
+                    Lysocline(2) = Lysocline+(Eqn(1)*Lysocline);
+                end
+            else
+                Lysocline(2) = Lysocline_In(2);
+            end
+        
+            L = Lysocline(2);
+            [Eqn(2),~,~] = Lysocline_Calculation_Zeebe(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);         
+        
+            L = Lysocline(2)-(Eqn(2).*((Lysocline(2)-Lysocline(1))./(Eqn(2)-Eqn(1))));
+        
+            if Iteration_Flag;
+                EqnT = Eqn(2);
+                if EqnT>0;
+                    Lysocline(2) = L;
+                else
+                    Lysocline(1) = L;
+                end
+                if L<0;
+                    L = 0;
+                elseif L>9990;
+                    L = 9990;
+                else
+                    while abs(EqnT)>Tolerance;
+                        L = Lysocline(2)-(Eqn(2).*((Lysocline(2)-Lysocline(1))./(Eqn(2)-Eqn(1))));
+                        [EqnT,~,~] = Lysocline_Calculation_Zeebe(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
+                        
+                        if EqnT>0;
+                            Lysocline(2) = L;
+                        else
+                            Lysocline(1) = L;
+                        end
+                    end
+                end
+            end
+        else
+            L = Lysocline(1);
+        end
+    end
+    
+    if L<0;
+        L = 10;
+    elseif L>9990;
+        L = 9990;
+    end
+
+    Lysocline_Out = L;
+end
 end
 
 function [Eqn,Ksp,CaCO3] = Lysocline_Calculation_Zeebe(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
