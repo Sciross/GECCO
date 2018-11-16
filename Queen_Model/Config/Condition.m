@@ -195,8 +195,14 @@ classdef Condition < matlab.mixin.Copyable
             end
             
             % Weathering
-            self.Initials.Silicate_Weathering_Fraction = (self.Constants.Weathering.Silicate_Weathering_Coefficients(1)*exp(self.Constants.Weathering.Silicate_Weathering_Coefficients(2)*self.Initials.Atmosphere_Temperature))/2;
-            self.Initials.Carbonate_Weathering_Fraction = (self.Constants.Weathering.Carbonate_Weathering_Coefficients(1)*exp(self.Constants.Weathering.Carbonate_Weathering_Coefficients(2)*self.Initials.Atmosphere_Temperature))/2;
+            if numel(self.Constants.Weathering.Silicate_Weathering_Coefficients)==2;
+                self.Constants.Weathering.Silicate_Weathering_Coefficients(3) = 0;
+            end
+            if numel(self.Constants.Weathering.Carbonate_Weathering_Coefficients)==2;
+                self.Constants.Weathering.Carbonate_Weathering_Coefficients(3) = 0;
+            end
+            self.Initials.Silicate_Weathering_Fraction = (self.Constants.Weathering.Silicate_Weathering_Coefficients(1)*exp(self.Constants.Weathering.Silicate_Weathering_Coefficients(2)*self.Initials.Atmosphere_Temperature)+self.Constants.Weathering.Silicate_Weathering_Coefficients(3))/2;
+            self.Initials.Carbonate_Weathering_Fraction = (self.Constants.Weathering.Carbonate_Weathering_Coefficients(1)*exp(self.Constants.Weathering.Carbonate_Weathering_Coefficients(2)*self.Initials.Atmosphere_Temperature)+self.Constants.Weathering.Carbonate_Weathering_Coefficients(3))/2;
             
             self.Initials.Conditions(13) = self.Initials.Silicate_Weathering_Fraction;
             self.Initials.Conditions(14) = self.Initials.Carbonate_Weathering_Fraction;
