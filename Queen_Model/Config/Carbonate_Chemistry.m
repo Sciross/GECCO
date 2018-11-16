@@ -55,7 +55,7 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
         Lysocline_Solver_Handle
     end
     methods
-        function self = Carbonate_Chemistry(Empty_Cell_Flag,Midpoints);            
+        function self = Carbonate_Chemistry(Empty_Cell_Flag,Midpoints); 
             Model_Filepath = which('GUI.m');
             Model_Dir = Model_Filepath(1:end-12);
             self.Model_Directory = Model_Dir;            
@@ -69,6 +69,9 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
             self = self.SetLysoclineSolver("Lysocline_Solver_Regula_Falsi");
             
             if nargin==0 || ~Empty_Cell_Flag;
+                if nargin==0;
+                    Midpoints = [1;1];
+                end
                 self = DefineCarbonateChemistryParameters(self,Midpoints);            
             elseif Empty_Cell_Flag
                 Properties = properties(self);
@@ -85,7 +88,7 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
         end
         function Solve(self,Initial_pH,Iteration_Flag,Tolerance);
             if nargin<2 || isempty(Initial_pH);
-                if ~isempty(self.pH);
+                if ~isempty(self.pH) && ~any(isnan(self.pH));
                     if numel(self.pH)==2;
                         Initial_pH = self.pH;
                     elseif numel(self.pH)==1;
