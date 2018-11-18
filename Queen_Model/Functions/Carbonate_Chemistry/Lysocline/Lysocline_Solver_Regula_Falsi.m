@@ -17,69 +17,71 @@ if ~isempty(Coefficients);
     if any(Lysocline_In<=0);
         Lysocline_In(Lysocline_In<=0) = 1;
     end
-    Lysocline = Lysocline_In;
+    Lysocline_Query = Lysocline_In;
 
-    L = Lysocline(1);
-    [~,Ksp,CaCO3] = Lysocline_Calculation_Hain(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
+    Lysocline_Current = Lysocline_Query(1);
+    [~,Ksp,CaCO3] = Lysocline_Calculation_Hain(Lysocline_Current,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
                     
-    if L<10 && CaCO3<0.5 && numel(Lysocline_In)==1;
-        L = 0;
-    elseif L>9990 && CaCO3>5 && numel(Lysocline_In)==1;
-        L = 10000;
+    if Lysocline_Current<10 && CaCO3<0.5 && numel(Lysocline_In)==1;
+        Lysocline_Current = 0;
+    elseif Lysocline_Current>9990 && CaCO3>5 && numel(Lysocline_In)==1;
+        Lysocline_Current = 10000;
     else
-        Eqn(1) = Ksp-CaCO3;
-        if (numel(Lysocline_In)>1) || (abs(Eqn(1))>Tolerance);
+        Disparity(1) = Ksp-CaCO3;
+        if (numel(Lysocline_In)>1) || (abs(Disparity(1))>Tolerance);
             if (numel(Lysocline_In)<2)
-                if Eqn(1)>0;
-                    Lysocline(2) = Lysocline-(Eqn(1)*Lysocline);
+                if Disparity(1)>0;
+                    Lysocline_Query(2) = Lysocline_Query-(Disparity(1)*Lysocline_Query);
                 else
-                    Lysocline(2) = Lysocline+(Eqn(1)*Lysocline);
+                    Lysocline_Query(2) = Lysocline_Query+(Disparity(1)*Lysocline_Query);
                 end
             else
-                Lysocline(2) = Lysocline_In(2);
+                Lysocline_Query(2) = Lysocline_In(2);
             end
         
-            L = Lysocline(2);
-            [Eqn(2),~,~] = Lysocline_Calculation_Hain(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);         
-        
-            L = Lysocline(2)-(Eqn(2).*((Lysocline(2)-Lysocline(1))./(Eqn(2)-Eqn(1))));
+            Lysocline_Current = Lysocline_Query(2);
+            [Disparity(2),~,~] = Lysocline_Calculation_Hain(Lysocline_Current,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);         
+            
+            Lysocline_Current = Lysocline_Query(2)-(Disparity(2).*((Lysocline_Query(2)-Lysocline_Query(1))./(Disparity(2)-Disparity(1))));
         
             if Iteration_Flag;
-                EqnT = Eqn(2);
-                if EqnT>0;
-                    Lysocline(2) = L;
+                Disparity_Current = Disparity(2);
+                if Disparity_Current>0;
+                    Lysocline_Query(2) = Lysocline_Current;
                 else
-                    Lysocline(1) = L;
+                    Lysocline_Query(1) = Lysocline_Current;
                 end
-                if L<0;
-                    L = 0;
-                elseif L>9990;
-                    L = 9990;
+                if Lysocline_Current<0;
+                    Lysocline_Current = 0;
+                elseif Lysocline_Current>9990;
+                    Lysocline_Current = 9990;
                 else
-                    while abs(EqnT)>Tolerance;
-                        L = Lysocline(2)-(Eqn(2).*((Lysocline(2)-Lysocline(1))./(Eqn(2)-Eqn(1))));
-                        [EqnT,~,~] = Lysocline_Calculation_Hain(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
+                    while abs(Disparity_Current)>Tolerance;
+                        Lysocline_Current = Lysocline_Query(2)-(Disparity(2).*((Lysocline_Query(2)-Lysocline_Query(1))./(Disparity(2)-Disparity(1))));
+                        [Disparity_Current,~,~] = Lysocline_Calculation_Hain(Lysocline_Current,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
                         
-                        if EqnT>0;
-                            Lysocline(2) = L;
+                        if Disparity_Current>0;
+                            Lysocline_Query(2) = Lysocline_Current;
+                            Disparity(2) = Disparity_Current;
                         else
-                            Lysocline(1) = L;
+                            Lysocline_Query(1) = Lysocline_Current;
+                            Disparity(1) = Disparity_Current;
                         end
                     end
                 end
             end
         else
-            L = Lysocline(1);
+            Lysocline_Current = Lysocline_Query(1);
         end
     end
     
-    if L<0;
-        L = 10;
-    elseif L>9990;
-        L = 9990;
+    if Lysocline_Current<0;
+        Lysocline_Current = 10;
+    elseif Lysocline_Current>9990;
+        Lysocline_Current = 9990;
     end
 
-    Lysocline_Out = L;
+    Lysocline_Out = Lysocline_Current;
 else
         %% One input = direct, simple calculation
     b = log10(Temperature(1)/Temperature(2))/log10(Midpoints(1)/Midpoints(2));
@@ -89,69 +91,69 @@ else
     if any(Lysocline_In<=0);
         Lysocline_In(Lysocline_In<=0) = 1;
     end
-    Lysocline = Lysocline_In;
+    Lysocline_Query = Lysocline_In;
 
-    L = Lysocline(1);
-    [~,Ksp,CaCO3] = Lysocline_Calculation_Zeebe(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
+    Lysocline_Current = Lysocline_Query(1);
+    [~,Ksp,CaCO3] = Lysocline_Calculation_Zeebe(Lysocline_Current,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
                     
-    if L<10 && CaCO3<0.5 && numel(Lysocline_In)==1;
-        L = 0;
-    elseif L>9990 && CaCO3>5 && numel(Lysocline_In)==1;
-        L = 10000;
+    if Lysocline_Current<10 && CaCO3<0.5 && numel(Lysocline_In)==1;
+        Lysocline_Current = 0;
+    elseif Lysocline_Current>9990 && CaCO3>5 && numel(Lysocline_In)==1;
+        Lysocline_Current = 10000;
     else
-        Eqn(1) = Ksp-CaCO3;
-        if (numel(Lysocline_In)>1) || (abs(Eqn(1))>Tolerance);
+        Disparity(1) = Ksp-CaCO3;
+        if (numel(Lysocline_In)>1) || (abs(Disparity(1))>Tolerance);
             if (numel(Lysocline_In)<2)
-                if Eqn(1)>0;
-                    Lysocline(2) = Lysocline-(Eqn(1)*Lysocline);
+                if Disparity(1)>0;
+                    Lysocline_Query(2) = Lysocline_Query-(Disparity(1)*Lysocline_Query);
                 else
-                    Lysocline(2) = Lysocline+(Eqn(1)*Lysocline);
+                    Lysocline_Query(2) = Lysocline_Query+(Disparity(1)*Lysocline_Query);
                 end
             else
-                Lysocline(2) = Lysocline_In(2);
+                Lysocline_Query(2) = Lysocline_In(2);
             end
         
-            L = Lysocline(2);
-            [Eqn(2),~,~] = Lysocline_Calculation_Zeebe(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);         
+            Lysocline_Current = Lysocline_Query(2);
+            [Disparity(2),~,~] = Lysocline_Calculation_Zeebe(Lysocline_Current,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);         
         
-            L = Lysocline(2)-(Eqn(2).*((Lysocline(2)-Lysocline(1))./(Eqn(2)-Eqn(1))));
+            Lysocline_Current = Lysocline_Query(2)-(Disparity(2).*((Lysocline_Query(2)-Lysocline_Query(1))./(Disparity(2)-Disparity(1))));
         
             if Iteration_Flag;
-                EqnT = Eqn(2);
-                if EqnT>0;
-                    Lysocline(2) = L;
+                Disparity_Current = Disparity(2);
+                if Disparity_Current>0;
+                    Lysocline_Query(2) = Lysocline_Current;
                 else
-                    Lysocline(1) = L;
+                    Lysocline_Query(1) = Lysocline_Current;
                 end
-                if L<0;
-                    L = 0;
-                elseif L>9990;
-                    L = 9990;
+                if Lysocline_Current<0;
+                    Lysocline_Current = 0;
+                elseif Lysocline_Current>9990;
+                    Lysocline_Current = 9990;
                 else
-                    while abs(EqnT)>Tolerance;
-                        L = Lysocline(2)-(Eqn(2).*((Lysocline(2)-Lysocline(1))./(Eqn(2)-Eqn(1))));
-                        [EqnT,~,~] = Lysocline_Calculation_Zeebe(L,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
+                    while abs(Disparity_Current)>Tolerance;
+                        Lysocline_Current = Lysocline_Query(2)-(Disparity(2).*((Lysocline_Query(2)-Lysocline_Query(1))./(Disparity(2)-Disparity(1))));
+                        [Disparity_Current,~,~] = Lysocline_Calculation_Zeebe(Lysocline_Current,pH,DIC,Q,b,R,Salinity,Calcium,Coefficients);
                         
-                        if EqnT>0;
-                            Lysocline(2) = L;
+                        if Disparity_Current>0;
+                            Lysocline_Query(2) = Lysocline_Current;
                         else
-                            Lysocline(1) = L;
+                            Lysocline_Query(1) = Lysocline_Current;
                         end
                     end
                 end
             end
         else
-            L = Lysocline(1);
+            Lysocline_Current = Lysocline_Query(1);
         end
     end
     
-    if L<0;
-        L = 10;
-    elseif L>9990;
-        L = 9990;
+    if Lysocline_Current<0;
+        Lysocline_Current = 10;
+    elseif Lysocline_Current>9990;
+        Lysocline_Current = 9990;
     end
 
-    Lysocline_Out = L;
+    Lysocline_Out = Lysocline_Current;
 end
 end
 
