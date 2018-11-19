@@ -19,9 +19,8 @@ classdef Weathering < matlab.mixin.Copyable & ParameterLoad
                 end
             end
         end
-        function Manipulate_Silicate_Weathering(self,Number,Value);
-            self.Silicate_Weathering_Coefficients = Alteration(self.Silicate_Weathering_Coefficients,Number,Value);
-            
+        function Manipulate_Silicate_Weathering(self,Number,Value,X_Lock);
+            self.Silicate_Weathering_Coefficients = Alteration(self.Silicate_Weathering_Coefficients,Number,Value,X_Lock);            
         end
     end
 end
