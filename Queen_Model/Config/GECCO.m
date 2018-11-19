@@ -186,9 +186,11 @@ classdef GECCO < handle
             netcdf.reDef(FileID);
             
             % Constants
+            Dimk_3 = {'k_3',3};
             Dimk_6 = {'k_6',6};
             Dimk_13 = {'k_13',13};
             
+            netcdf.defDim(FileID,Dimk_3{1},Dimk_3{2});
             netcdf.defDim(FileID,Dimk_6{1},Dimk_6{2});
             netcdf.defDim(FileID,Dimk_13{1},Dimk_13{2});
             
