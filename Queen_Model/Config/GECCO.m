@@ -743,11 +743,14 @@ classdef GECCO < handle
                 end
                 
                 if self.ShouldSaveFlag;
-                    self.MakeDimensionMap(Runs_To_Do(Run_Index));
-                    if self.SaveToSameFileFlag();
+                    for Run_Index = 1:numel(Runs_To_Do);
+                        self.MakeDimensionMap(Runs_To_Do(Run_Index));
+                    end
+                    
+                    if self.SaveToSameFileFlag;
                         self.SelfPrepareNetCDF();
                     end
-                    if self.SaveToRunFilesFlag();
+                    if self.SaveToRunFilesFlag;
                         for Run_Index = 1:numel(Runs_To_Do);
                             self.Runs(Runs_To_Do(Run_Index)).SelfPrepareNetCDF();
                         end
@@ -777,6 +780,9 @@ classdef GECCO < handle
 
                         % Preallocate output arrays
                         DataChunks = cell(1:numel(self.Runs(Runs_To_Do(Run_Index)).Chunks));
+                        for Chunk_Index = 1:numel(self.Runs(Runs_To_Do(Run_Index)).Chunks);
+                            DataChunks{Chunk_Index} = cell(1,4);
+                        end
                         DataRun = cell(0);
                         DependentRun = cell(0);
                         ParameterRun = cell(0);
