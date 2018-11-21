@@ -1,7 +1,7 @@
 Change_Times = 10e6;
 Magnesium_Change_Times = Change_Times;
-Calcium_At_Change = 10; %[10;18];
-Magnesium_At_Change = 50; %[50;34];
+Calcium_At_Change = [10;18];
+Magnesium_At_Change = [50;34];
 
 Calcium_Start = 20;
 Calcium_End = 10;
@@ -9,7 +9,7 @@ Calcium_End = 10;
 Magnesium_Start = 30;
 Magnesium_End = 50;
 
-Coefficients = [-0.02;0;0.02;0.1;0.2];
+Coefficients = [-0.01;0;0.01;0.04;0.1;0.2];
                 
 Run_Length = 70e6;
 
@@ -17,7 +17,7 @@ Run_Length = 70e6;
 
 % Set up cluster
 Cluster = parcluster();
-Cluster.SubmitArguments = '-l walltime=12:00:00';
+Cluster.SubmitArguments = '-l walltime=10:00:00';
 
 for Magnesium_Change_Index = 1:numel(Magnesium_At_Change);
     for Time_Index = 1:numel(Change_Times);
