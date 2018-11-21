@@ -88,6 +88,3 @@ for Magnesium_Change_Index = 1:numel(Magnesium_At_Change);
         end        
     end
 end
-
-
-
