@@ -17,7 +17,7 @@ Run_Length = 70e6;
 
 % Set up cluster
 Cluster = parcluster();
-Cluster.SubmitArguments = '-l walltime=10:00:00';
+Cluster.SubmitArguments = '-l walltime=16:00:00';
 
 for Magnesium_Change_Index = 1:numel(Magnesium_At_Change);
     for Time_Index = 1:numel(Change_Times);
