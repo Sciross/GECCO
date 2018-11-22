@@ -150,6 +150,11 @@ classdef Condition < matlab.mixin.Copyable
             self.Presents.Carbonate_Chemistry.Alkalinity = self.Initials.Alkalinity;
             self.Presents.Carbonate_Chemistry.Depths = self.Presents.Architecture.Ocean_Midpoints;
         end
+        
+        function PerformStandardOutgassingPerturbation(self);
+            Time_Array = 1:self.Constants.Outgassing.Temporal_Resolution:(numel(self.Initials.Outgassing)*self.Constants.Outgassing.Temporal_Resolution);
+            self.Initials.PerformStandardOutgassingPerturbation(Time_Array);
+        end
 
         function Perturb(self,Perturbations,Chunk_Number);
             %% Perturbation handling

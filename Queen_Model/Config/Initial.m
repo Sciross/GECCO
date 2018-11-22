@@ -176,6 +176,18 @@ classdef Initial < matlab.mixin.Copyable
             
         end
         
+        function AddToOutgassing(self,Time_Array,Mean,Spread,Total);
+            Gaussian = GenerateGaussian(Time_Array,[Spread,Mean]);
+            Scaled_Gaussian = (Gaussian./nansum(Gaussian)).*Total;
+            self.Outgassing = self.Outgassing+Scaled_Gaussian';
+        end
+        function PerformStandardOutgassingPerturbation(self,Time_Array);
+            Carbon_Addition = 5000; %GtC
+            Carbon_Addition_kg = (Carbon_Addition.*1e9).*1e6;
+            Carbon_Addition_mol = Carbon_Addition_kg./12;
+            self.AddToOutgassing(Time_Array,1e5,0.2e5,Carbon_Addition_mol);            
+        end
+        
     end
     methods(Access = protected)
         function Copy = copyElement(self);
