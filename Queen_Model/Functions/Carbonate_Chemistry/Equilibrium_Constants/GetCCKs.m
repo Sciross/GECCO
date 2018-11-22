@@ -1,4 +1,4 @@
-function [CorrectedConstants,Corr] = GetCCKConstants(Salinity,Temperature,Pressure,PressureCorrection,Coefficients);
+function [Corrected_Constants,Correction] = GetCCKs(Salinity,Temperature,Pressure,Pressure_Correction,Coefficients,Calcium,Calcium_Init,Magnesium,Magnesium_Init,Correction_Flag);
 %% GetCCKConstants calculates the dissociation constants of the carbonate system.
 % Temperature, pressure and salinity are reshaped into vectors in the third
 % dimension to facilitate code vectorisation.
@@ -56,6 +56,27 @@ else
     Ksp_Arag = 10.^(Coefficients{7}(1) + (Coefficients{7}(2).*Tk) + (Coefficients{7}(3)./Tk) + (Coefficients{7}(4).*log10(Tk)) + ((S.^(1/2)).*(Coefficients{7}(5) + (Coefficients{7}(6).*Tk) + (Coefficients{7}(7)./Tk))) + (S.*Coefficients{7}(8)) + (S.*Coefficients{7}(9).*(S.^(3/2))));
 end
 
+if Correction_Flag==1;
+    K1_Ca_Sensitivity = 33.73e-3;
+    K1_Mg_Sensitivity = 155.05e-3;
+    K1_Ca_Correction = K1_Ca_Sensitivity.*((Calcium-Calcium_Init)./Calcium_Init);
+    K1_Mg_Correction = K1_Mg_Sensitivity.*((Magnesium-Magnesium_Init)./Magnesium_Init);
+    K1_Correction = K1_Ca_Correction.*K1_Mg_Correction;
+    
+    K2_Ca_Sensitivity = 38.85e-3;
+    K2_Mg_Sensitivity = 442.24e-3;
+    K2_Ca_Correction = K2_Ca_Sensitivity.*((Calcium-Calcium_Init)./Calcium_Init);
+    K2_Mg_Correction = K2_Mg_Sensitivity.*((Magnesium-Magnesium_Init)./Magnesium_Init);
+    K2_Correction = K2_Ca_Correction.*K2_Mg_Correction;
+    
+    Alpha = 3.6655e-8;
+    Ksp_Correction = - Alpha.*(5.14-Magnesium./Calcium);
+    
+    K1 = K1+(K1.*K1_Correction);
+    K2 = K2+(K2.*K2_Correction);
+    Ksp_Cal = Ksp_Cal-Ksp_Correction;
+end
+
 % DOE (1994)
 Ksi = exp((-8904.2./Tk)+117.385-(19.334.*log(Tk))+((3.5913-(458.79./Tk)).*(I.^(0.5)))+(((188.74./Tk)-1.5998).*I)+((0.07871-(12.1652./Tk)).*(I.^2))+log(1-(0.001005.*S)));%#UNCHECKED
 % DOE (1994)
@@ -66,15 +87,15 @@ Kp_2 = exp((-8814.715./Tk)+172.0883-(27.927.*log(Tk))+(((-160.34./Tk)+1.3566).*S
 Kp_3 = exp((-3070.75./Tk)-18.141+(((17.27039./Tk)+2.81197).*S.^(0.5))+(((-44.99486./Tk)-0.09984).*S));%#UNCHECKED
 
 % Combine constants
-AllConstants = ([K0,K1,K2,Kb,Kw,Ksi,Ks,Kf,Ksp_Cal,Ksp_Arag,Kp_1,Kp_2,Kp_3]);
+All_Constants = ([K0,K1,K2,Kb,Kw,Ksi,Ks,Kf,Ksp_Cal,Ksp_Arag,Kp_1,Kp_2,Kp_3]);
 
 %% Pressure/Temperature Correction
-Corr = GetPressureCorrection(Tk,Tc,P,PressureCorrection);
+Correction = GetPressureCorrection(Tk,Tc,P,Pressure_Correction);
 % Output corrected constants
 % Output into mol/m3
-UnitCorrectionMatrix = [1000,1000,1000,1000,10^6,1000,1000,1000,10^6,10^6,1000,1000,1000;
+Unit_Correction_Matrix = [1000,1000,1000,1000,10^6,1000,1000,1000,10^6,10^6,1000,1000,1000;
                         1000,1000,1000,1000,10^6,1000,1000,1000,10^6,10^6,1000,1000,1000,];
-CorrectedConstants = (AllConstants).*Corr.*UnitCorrectionMatrix;
+Corrected_Constants = (All_Constants).*Correction.*Unit_Correction_Matrix;
 
 
 %% ### CHECK CORRECTION FOR KS

@@ -226,6 +226,8 @@ classdef Condition < matlab.mixin.Copyable
             self.Presents.Carbon.Riverine_Alkalinity =(2*(Silicate_Weathering+sum(Carbonate_Weathering)))./self.Presents.Architecture.Riverine_Volume;
 
             self.Presents.Carbonate_Chemistry.SetCoefficients();
+            self.Presents.Carbonate_Chemistry.Calcium_Initial = self.Constants.Carbonate_Chemistry.Calcium;
+            self.Presents.Carbonate_Chemistry.Magnesium_Initial = self.Constants.Carbonate_Chemistry.Magnesium;
             self.Presents.Carbonate_Chemistry.SetCCKs();
     
             % pH

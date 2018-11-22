@@ -53,6 +53,8 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
         Available_Lysocline_Solvers
         Solver_Handle
         Lysocline_Solver_Handle
+        Calcium_Initial
+        Magnesium_Initial
     end
     methods
         function self = Carbonate_Chemistry(Empty_Cell_Flag,Midpoints); 
@@ -84,7 +86,7 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
             self.Coefficients = GetCoefficients(self);
         end
         function SetCCKs(self);
-             [self.CCKs,self.CCK_Depth_Correction] = GetCCKs(self.Salinity,self.Temperature,self.Pressure,self.Pressure_Correction,self.Coefficients);
+             [self.CCKs,self.CCK_Depth_Correction] = GetCCKs(self.Salinity,self.Temperature,self.Pressure,self.Pressure_Correction,self.Coefficients,self.Calcium,self.Calcium_Initial,self.Magnesium,self.Magnesium_Initial,self.CCK_Mg_Ca_Correction);
         end
         function Solve(self,Initial_pH,Iteration_Flag,Tolerance);
             if nargin<2 || isempty(Initial_pH);
