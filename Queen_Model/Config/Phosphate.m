@@ -10,6 +10,7 @@ classdef Phosphate < matlab.mixin.Copyable & ParameterLoad
         Productivity_Split
         Proportionality_To_Silicate
         Proportionality_To_Carbonate
+        Proportionality_To_Nothing
     end    
     methods
         function self = Phosphate(Empty_Cell_Flag);

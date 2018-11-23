@@ -19,4 +19,5 @@ function Phosphate = DefinePhosphateParameters(Phosphate);
     
     Phosphate.Proportionality_To_Silicate = 0.006;
     Phosphate.Proportionality_To_Carbonate = 0.003;
+    Phosphate.Proportionality_To_Nothing = 0;
 end
