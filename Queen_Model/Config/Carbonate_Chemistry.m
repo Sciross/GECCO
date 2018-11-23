@@ -123,7 +123,7 @@ classdef Carbonate_Chemistry < matlab.mixin.Copyable & ParameterLoad
             if nargin<4;
                 Tolerance = 1e-6;
             end
-            self.Lysocline = Lysocline_Solver_Regula_Falsi(self.DIC(2),self.Depths,self.Temperature,self.Salinity,self.pH,self.Calcium,self.Coefficients,Initial_Lysocline,Iteration_Flag,Tolerance);
+            self.Lysocline = Lysocline_Solver_Regula_Falsi(self.DIC(2),self.Depths,self.Temperature,self.Salinity,self.pH,self.Calcium,self.Calcium_Initial,self.Magnesium,self.Magnesium_Initial,self.CCK_Mg_Ca_Correction,self.Coefficients,Initial_Lysocline,Iteration_Flag,Tolerance);
         end        
         function Available_Solvers = GetAvailableSolvers(self,src,event);
             % Looks for directory contents matching pattern

@@ -764,7 +764,7 @@ classdef GECCO < handle
                     end
                 end
                 
-                try
+%                 try
                     % Loop for runs
                     for Run_Index = 1:numel(Runs_To_Do);
                         DateTime(1) = datetime('now');
@@ -855,15 +855,15 @@ classdef GECCO < handle
                             sendtheemail('ross.whiteford@soton.ac.uk','Model Run Complete',['Your model run finished at ',char(datetime('now','Format','HH:mm:ss'))])
                         end
                     end
-                catch ME
-                    if self.UsedGUIFlag;
-                        Gui.UpdateLogBox('Error!');
-                    else
-                        disp('Error!');
-                    end                    
-                    profile off
-                    error("Something went wrong, try-catch triggered");
-                end
+%                 catch ME
+%                     if self.UsedGUIFlag;
+%                         Gui.UpdateLogBox('Error!');
+%                     else
+%                         disp('Error!');
+%                     end                    
+%                     profile off
+%                     error("Something went wrong, try-catch triggered");
+%                 end
                   
                 % Print to log box
                 if self.UsedGUIFlag;
