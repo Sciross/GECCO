@@ -11,8 +11,8 @@ Strengths = [0;0.7;0.9;1/0.9;1/0.7];
 % Upload 600ppm_14_Short before running
 
 % Set up cluster
-% Cluster = parcluster();
-% Cluster.SubmitArguments = '-l walltime=12:00:00';
+Cluster = parcluster();
+Cluster.SubmitArguments = '-l walltime=12:00:00';
 
 for Time_Index = 1:numel(Change_Times);
     for Lag_Change_Index = 1:numel(Lag_At_Change);
@@ -37,13 +37,13 @@ for Time_Index = 1:numel(Change_Times);
             Gecco.Runs(Productivity_Change_Index).Chunks(2).Time_In(2) = Run_Length;
             Gecco.Runs(Productivity_Change_Index).Chunks(2).Time_Out(2) = Run_Length;
             
-%             File = "/home/rw12g11/600ppm_14_Short.nc";
-%             Gecco.LoadFinal(File);
-%             Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Load(File);
-            
-            File = "C:/Users/Ross/Documents/Work/PhD/Results/Queen_Model/Steady_States/Maastrictian/600ppm_14_Short.nc";
+            File = "/home/rw12g11/600ppm_14_Short.nc";
             Gecco.LoadFinal(File);
             Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Load(File);
+            
+%             File = "C:/Users/Ross/Documents/Work/PhD/Results/Queen_Model/Steady_States/Maastrictian/600ppm_14_Short.nc";
+%             Gecco.LoadFinal(File);
+%             Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Load(File);
           
             % Need to change the core
             Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Functionals.SetCore("Core_Tectonics");
