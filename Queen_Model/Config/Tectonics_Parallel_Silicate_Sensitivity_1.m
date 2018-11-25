@@ -6,7 +6,7 @@ Lag_At_Change = [1.6e6,2.4e6,2.6e6,3.6e6];
 Run_Length = 70e6;
 Lag_Start = 2.5e6;
 
-Coefficients = [-0.02;0;0.02;0.1;0.2];
+Coefficients = [-0.01;0;0.01;0.04;0.1;0.2];
 
 % Upload 600ppm_14_Short before running
 
@@ -40,6 +40,7 @@ for Time_Index = 1:numel(Change_Times);
             File = "/home/rw12g11/600ppm_14_Short.nc";
             Gecco.LoadFinal(File);
             Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Constants.Load(File);
+            Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Constants.Weathering.Silicate_Weathering_Coefficients(3) = 0;
             
             % Need to change the core
             Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Functionals.SetCore("Core_Tectonics");
@@ -50,7 +51,7 @@ for Time_Index = 1:numel(Change_Times);
             end
             
             % CREATE THE DIRECTORY BEFORE RUNNING
-            Gecco.Runs(Silicate_Change_Index).Information.Output_Filepath = "/scratch/rw12g11/Tectonics_Silicate_Sensitivity";
+            Gecco.Runs(Silicate_Change_Index).Information.Output_Filepath = "/scratch/rw12g11/Tectonics_Silicate_Sensitivity/10e6";
             Gecco.Runs(Silicate_Change_Index).Information.Output_Filename = strcat("T",num2str(Change_Times(Time_Index)),"LC",num2str(Lag_At_Change(Lag_Change_Index)),"SW",num2str(Silicate_Change_Index),".nc");
             
             % Calculations for transients
@@ -64,7 +65,10 @@ for Time_Index = 1:numel(Change_Times);
             % Add the right transients
             Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Transients.Outgassing.Mean_Lag(1,1:3) = {1,':',str2func(strcat("@(t,Conditions)(",num2str(Lag_m(1)),".*t)+",num2str(Lag_c(1))))};
             
+            % Manipulate the coefficients
+            Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Constants.Weathering.Manipulate_Silicate_Weathering([1;2;3],[NaN;Coefficients(Silicate_Change_Index);Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Constants.Weathering.Silicate_Weathering_Coefficients(3)],Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Initials.Atmosphere_Temperature);
         end
+        
         % Submit job
         Gecco.RunModelOnIridis(Cluster);
     end

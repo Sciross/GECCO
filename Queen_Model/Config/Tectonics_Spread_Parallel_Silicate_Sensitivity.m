@@ -6,7 +6,7 @@ Spread_At_Change = [0.2e6,0.4e6,0.6e6,0.8e6];%:0.5e6:3.5e6;
 Run_Length = 70e6;
 Spread_Start = 0.5e6;
 
-Coefficients = [-0.02;0;0.02;0.1;0.2];
+Coefficients = [-0.01;0;0.01;0.04;0.1;0.2];
 
 % Upload 600ppm_14_Short before running
 
@@ -40,6 +40,7 @@ for Time_Index = 1:numel(Change_Times);
             File = "/home/rw12g11/600ppm_14_Short.nc";
             Gecco.LoadFinal(File);
             Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Constants.Load(File);
+            Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Constants.Weathering.Silicate_Weathering_Coefficients(3) = 0;
             
             % Need to change the core
             Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Functionals.SetCore("Core_Tectonics");
@@ -64,9 +65,15 @@ for Time_Index = 1:numel(Change_Times);
             % Add the right transients
             Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Transients.Outgassing.Spread(1,1:3) = {1,':',str2func(strcat("@(t,Conditions)(",num2str(Spread_m(1)),".*t)+",num2str(Spread_c(1))))};
             
+            % Manipulate the coefficients
+            Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Constants.Weathering.Manipulate_Silicate_Weathering([1;2;3],[NaN;Coefficients(Silicate_Change_Index);Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Constants.Weathering.Silicate_Weathering_Coefficients(3)],Gecco.Runs(Silicate_Change_Index).Regions.Conditions.Initials.Atmosphere_Temperature);
         end
+        
         % Submit job
         Gecco.RunModelOnIridis(Cluster);
+        
+        clearvars -except Change_Times Spread_At_Change Run_Length Spread_Start Coefficients Cluster Time_Index Spread_Change_Index Silicate_Change_Index
+        
     end
 end
 
