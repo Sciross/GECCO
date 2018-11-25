@@ -18,6 +18,7 @@ classdef ParameterLoad < handle
             catch
 %                 warning(strcat("Parameter '",string(Individual),"' not found"));
                 Retrieved_Data = [];
+                netcdf.close(FileID);
                 return;
             end
             [~,~,DimIDs,~] = netcdf.inqVar(ParamSubGrpID,VarID);
@@ -78,6 +79,7 @@ classdef ParameterLoad < handle
             catch
 %                 warning(strcat("Parameter '",string(Individual),"' not found"));
                 Retrieved_Data = {};
+                netcdf.close(FileID);
                 return;
             end
             [~,~,DimIDs,~] = netcdf.inqVar(ParamSubGrpID,VarID);
@@ -142,7 +144,8 @@ classdef ParameterLoad < handle
                 VarID = netcdf.inqVarID(ParamSubGrpID,Individual);
             catch
 %                 warning(strcat("Parameter '",string(Individual),"' not found"));
-                Retrieved_Data = {};
+                Retrieved_Data = {};                
+                netcdf.close(FileID);
                 return;
             end
             [~,~,DimIDs,~] = netcdf.inqVar(ParamSubGrpID,VarID);
