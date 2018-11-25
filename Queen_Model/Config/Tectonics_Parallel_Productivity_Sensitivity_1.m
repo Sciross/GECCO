@@ -54,8 +54,8 @@ for Time_Index = 1:numel(Change_Times);
             end
             
             % CREATE THE DIRECTORY BEFORE RUNNING
-            Gecco.Runs(Productivity_Change_Index).Information.Output_Filepath = "/scratch/rw12g11/Tectonics_Bathymetry_Sensitivity/10e6";
-            Gecco.Runs(Productivity_Change_Index).Information.Output_Filename = strcat("T",num2str(Change_Times(Time_Index)),"LC",num2str(Lag_At_Change(Lag_Change_Index)),"B",num2str(Productivity_Change_Index),".nc");
+            Gecco.Runs(Productivity_Change_Index).Information.Output_Filepath = "/scratch/rw12g11/Tectonics_Productivity_Sensitivity/10e6";
+            Gecco.Runs(Productivity_Change_Index).Information.Output_Filename = strcat("T",num2str(Change_Times(Time_Index)),"LC",num2str(Lag_At_Change(Lag_Change_Index)),"P",num2str(Productivity_Change_Index),".nc");
             
             % Calculations for transients
             Lag_Point = Lag_At_Change(Lag_Change_Index);
