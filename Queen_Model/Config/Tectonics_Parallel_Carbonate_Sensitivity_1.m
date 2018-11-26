@@ -37,11 +37,11 @@ for Time_Index = 1:numel(Change_Times);
             Gecco.Runs(Carbonate_Change_Index).Chunks(2).Time_In(2) = Run_Length;
             Gecco.Runs(Carbonate_Change_Index).Chunks(2).Time_Out(2) = Run_Length;
             
-            File = "/home/rw12g11/600ppm_14_Short.nc";
-            Gecco.LoadFinal(File);
+            File = "/home/rw12g11/600ppm_14_Short.nc"; 
             Gecco.Runs(Carbonate_Change_Index).Regions.Conditions.Constants.Load(File);
             Gecco.Runs(Carbonate_Change_Index).Regions.Conditions.Constants.Weathering.Carbonate_Weathering_Coefficients(3) = 0;
-            
+            Gecco.LoadFinal(File);
+           
             % Need to change the core
             Gecco.Runs(Carbonate_Change_Index).Regions.Conditions.Functionals.SetCore("Core_Tectonics");
             

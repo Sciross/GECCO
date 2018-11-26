@@ -9,8 +9,8 @@ Lag_Start = 2.5e6;
 % Upload 600ppm_14_Short before running
 
 % Set up cluster
-Cluster = parcluster();
-Cluster.SubmitArguments = '-l walltime=12:00:00';
+% Cluster = parcluster();
+% Cluster.SubmitArguments = '-l walltime=12:00:00';
 
 for Time_Index = 1:numel(Change_Times);
         Gecco = GECCO();
@@ -38,9 +38,12 @@ for Time_Index = 1:numel(Change_Times);
 %             Gecco.LoadFinal(File);
 %             Gecco.Runs(Lag_Change_Index).Regions.Conditions.Constants.Load(File);
             
-            File = strcat("C:/Users/Ross/Documents/Work/PhD/Results/Queen_Model/Transients/Tectonics_Ensemble/10e6/","T",num2str(Change_Times(Time_Index)),"LC",num2str(Lag_At_Change(Lag_Change_Index)),".nc");
-            Gecco.LoadFinal(File);
+            File = strcat("G:/Documents/Work/PhD/Results/Queen_Model/Transients/Tectonics_Ensemble/10e6/","T",num2str(Change_Times(Time_Index)),"LC",num2str(Lag_At_Change(Lag_Change_Index)),".nc");
             Gecco.Runs(Lag_Change_Index).Regions.Conditions.Constants.Load(File);
+            Gecco.Runs(Lag_Change_Index).Regions.Conditions.Constants.Outgassing.Mean_Lag = Gecco.Runs(Lag_Change_Index).Regions.Conditions.Constants.Outgassing.Mean_Lag(end);
+            Gecco.LoadFinal(File);
+            
+            % Reduce transient size
           
             % Need to change the core
             Gecco.Runs(Lag_Change_Index).Regions.Conditions.Functionals.SetCore("Core_Tectonics");

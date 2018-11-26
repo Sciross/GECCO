@@ -40,8 +40,8 @@ for Time_Index = 1:numel(Change_Times);
             Gecco.Runs(Bathymetry_Change_Index).Chunks(2).Time_Out(2) = Run_Length;
             
             File = "/home/rw12g11/600ppm_14_Short.nc";
-            Gecco.LoadFinal(File);
             Gecco.Runs(Bathymetry_Change_Index).Regions.Conditions.Constants.Load(File);
+            Gecco.LoadFinal(File);
             
             % Need to change the core
             Gecco.Runs(Bathymetry_Change_Index).Regions.Conditions.Functionals.SetCore("Core_Tectonics");
