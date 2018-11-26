@@ -95,7 +95,7 @@ function [Compiled_Outputs,Flag_Out] = Heun_Unoptimised(ODE,Run,Chunk_Number);
         end
         
         Count = 1;
-%         try
+        try
             for Current_Step = 2:numel(Time_In);
                 % Calculate gradient at point 1
                 [Gradients_1,dy_1_Sub,dy_1_Meta] = ODE(Time_In(Current_Step-1),Temporary_Outputs_1,Temporary_Seafloor_1,Temporary_Outgassing_1,Chunk_Number);
@@ -149,17 +149,17 @@ function [Compiled_Outputs,Flag_Out] = Heun_Unoptimised(ODE,Run,Chunk_Number);
                 Temporary_Seafloor_1 = Temporary_Seafloor_2;
                 Temporary_Outgassing_1 = Temporary_Outgassing_2;
             end
-%         catch Error_Object
-%             if ~isnan(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths);
-%                 Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH;Cores],Transients,PIC_Burial};
-%             else
-%                 Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH],Transients,PIC_Burial};
-%             end
-%             Run.Regions(1).Outputs.Outgassing = Temporary_Outgassing_2;
-%             Run.Regions(1).Outputs.Seafloor = Temporary_Seafloor_2;
-%             Flag_Out = 0;
-%             return
-%         end
+        catch Error_Object
+            if ~isnan(Run.Regions(1).Conditions.Presents.Seafloor.Core_Depths);
+                Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH;Cores],Transients,PIC_Burial};
+            else
+                Compiled_Outputs = {Outputs,[Time_Out;Lysocline;Seafloor_Total;pH],Transients,PIC_Burial};
+            end
+            Run.Regions(1).Outputs.Outgassing = Temporary_Outgassing_2;
+            Run.Regions(1).Outputs.Seafloor = Temporary_Seafloor_2;
+            Flag_Out = 0;
+            return
+        end
     else
         error("The input and output times are not aligned. Output spacing must be a multiple of solver spacing, and must start at the same time.");
     end
