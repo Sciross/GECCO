@@ -40,7 +40,7 @@ for Time_Index = 1:numel(Change_Times);
             File = "/home/rw12g11/600ppm_14_Short.nc";
             Gecco.LoadFinal(File);
             Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Load(File);
-            
+
 %             File = "C:/Users/Ross/Documents/Work/PhD/Results/Queen_Model/Steady_States/Maastrictian/600ppm_14_Short.nc";
 %             Gecco.LoadFinal(File);
 %             Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Load(File);
@@ -71,11 +71,11 @@ for Time_Index = 1:numel(Change_Times);
             % Do weathering calculations
             OceanArray = double(Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Architecture.Hypsometric_Bin_Midpoints<round(Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Initials.Sea_Level));
             
-            Silicate_Weathering = (Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Initials.Conditions(12)*Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Initials.Conditions(13));
+            Silicate_Weathering = (Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Initials.Conditions(12)*Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Initials.Conditions(13).*Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Weathering.Silicate_Weatherability);
             Carbonate_Weathering = sum((1-OceanArray).*(Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Initials.Seafloor.*Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Weathering.Carbonate_Exposure).*Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Initials.Carbonate_Weathering_Fraction.*Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Weathering.Carbonate_Weatherability);
 
             Phosphate_From_Silicate = Silicate_Weathering.*Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Phosphate.Proportionality_To_Silicate;
-            Phosphate_From_Carbonate = Silicate_Weathering.*Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Phosphate.Proportionality_To_Carbonate;
+            Phosphate_From_Carbonate = Carbonate_Weathering.*Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Phosphate.Proportionality_To_Carbonate;
             
             % Manipulate the coefficients
             Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Phosphate.Proportionality_To_Silicate = Gecco.Runs(Productivity_Change_Index).Regions.Conditions.Constants.Phosphate.Proportionality_To_Silicate.*Strengths(Productivity_Change_Index);
