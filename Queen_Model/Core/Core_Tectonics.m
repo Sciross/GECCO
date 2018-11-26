@@ -217,7 +217,7 @@ function [dy,dy_Sub,dy_Outgas] = Core_Tectonics(t,y,y_Sub,y_Outgas,Chunk_Number,
     Model.Conditions.Presents.Carbon.Riverine_Carbon = (2*(Silicate_Weathering+sum(Carbonate_Weathering)))./Model.Conditions.Presents.Architecture.Riverine_Volume;
     Model.Conditions.Presents.Carbon.Riverine_Alkalinity =(2*(Silicate_Weathering+sum(Carbonate_Weathering)))./Model.Conditions.Presents.Architecture.Riverine_Volume;
     
-    Model.Conditions.Presents.Phosphate.Riverine_Concentration = ((Silicate_Weathering.*Model.Conditions.Presents.Phosphate.Proportionality_To_Silicate)+(sum(Carbonate_Weathering).*Model.Conditions.Presents.Phosphate.Proportionality_To_Carbonate))./Model.Conditions.Presents.Architecture.Riverine_Volume;
+    Model.Conditions.Presents.Phosphate.Riverine_Concentration = ((Silicate_Weathering.*Model.Conditions.Presents.Phosphate.Proportionality_To_Silicate)+(sum(Carbonate_Weathering).*Model.Conditions.Presents.Phosphate.Proportionality_To_Carbonate)+Model.Conditions.Presents.Phosphate.Proportionality_To_Nothing)./Model.Conditions.Presents.Architecture.Riverine_Volume;
     
     if any(isnan(y_Sub)) || any(y_Sub<0) || any(isnan(dy)) || any(y(1:8)<0) || any(~isreal(dy));
       error('Something broke');
