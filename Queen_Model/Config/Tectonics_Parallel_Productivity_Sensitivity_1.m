@@ -91,6 +91,3 @@ for Time_Index = 1:numel(Change_Times);
         Gecco.RunModelOnIridis(Cluster);
     end
 end
-
-
-
