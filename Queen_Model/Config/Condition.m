@@ -215,10 +215,10 @@ classdef Condition < matlab.mixin.Copyable
             % Weathering            
             OceanArray = double(self.Presents.Architecture.Hypsometric_Bin_Midpoints<round(self.Initials.Sea_Level));
             
-            Silicate_Weathering = (self.Initials.Conditions(12)*self.Initials.Conditions(13));
+            Silicate_Weathering = (self.Initials.Conditions(12)*self.Initials.Conditions(13).*self.Presents.Weathering.Silicate_Weatherability);
             Carbonate_Weathering = (1-OceanArray).*(self.Initials.Seafloor.*self.Presents.Weathering.Carbonate_Exposure).*self.Initials.Carbonate_Weathering_Fraction.*self.Presents.Weathering.Carbonate_Weatherability;
 
-            Weathering = (Silicate_Weathering*self.Constants.Weathering.Silicate_Weatherability + Carbonate_Weathering*self.Constants.Weathering.Carbonate_Weatherability);
+            Weathering = (Silicate_Weathering + Carbonate_Weathering);
             
             self.Presents.Phosphate.Riverine_Concentration = ((Silicate_Weathering.*self.Presents.Phosphate.Proportionality_To_Silicate)+(sum(Carbonate_Weathering).*self.Presents.Phosphate.Proportionality_To_Carbonate))./self.Presents.Architecture.Riverine_Volume;
     
