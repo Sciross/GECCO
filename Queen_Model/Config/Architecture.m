@@ -49,14 +49,14 @@ classdef Architecture < matlab.mixin.Copyable & ParameterLoad
         end
         function RecalculateInterpolationMatrix(self);            
             Bin_Midpoints = self.Hypsometric_Bin_Midpoints; %[0,BinMids];
-            Hypsometry = self.Hypsometry; %[0,Hypsometry];
+            Hypsometry = self.Cumulative_Hypsometry; %[0,Hypsometry];
             
             % y = mx + c
             % m = (y2-y1)/(x2-x1)
             Gradient = diff(Hypsometry)./diff(Bin_Midpoints);
             YIntercept = Hypsometry(1:end-1)-(Gradient.*Bin_Midpoints(1:end-1));
             
-            self.Hypsometric_Interpolation_Matrix = [Gradient;YIntercept]';
+            self.Hypsometric_Interpolation_Matrix = [Gradient,YIntercept];
             
         end
     end
