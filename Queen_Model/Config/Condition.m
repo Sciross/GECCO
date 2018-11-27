@@ -151,9 +151,18 @@ classdef Condition < matlab.mixin.Copyable
             self.Presents.Carbonate_Chemistry.Depths = self.Presents.Architecture.Ocean_Midpoints;
         end
         
-        function PerformStandardOutgassingPerturbation(self);
+        function PerformStandardOutgassingPerturbation(self,Carbon_Addition,Perturbation_Time_Centre,Perturbation_Time_Spread);
             Time_Array = 1:self.Constants.Outgassing.Temporal_Resolution:(numel(self.Initials.Outgassing)*self.Constants.Outgassing.Temporal_Resolution);
-            self.Initials.PerformStandardOutgassingPerturbation(Time_Array);
+            if nargin<4 || isempty(Perturbation_Time_Spread) || isnan(Perturbation_Time_Spread);
+                Perturbation_Time_Spread = 0.3e6;
+            end
+            if nargin<3 || isempty(Perturbation_Time_Centre) || isnan(Perturbation_Time_Centre);
+                Perturbation_Time_Centre = 1e6;
+            end
+            if nargin<2 || isempty(Carbon_Addition) || isnan(Carbon_Addition);
+                Carbon_Addition = 20000;
+            end            
+            self.Initials.PerformStandardOutgassingPerturbation(Time_Array,Carbon_Addition,Perturbation_Time_Centre,Perturbation_Time_Spread);
         end
 
         function Perturb(self,Perturbations,Chunk_Number);
