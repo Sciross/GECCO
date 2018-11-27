@@ -181,11 +181,19 @@ classdef Initial < matlab.mixin.Copyable
             Scaled_Gaussian = (Gaussian./nansum(Gaussian)).*Total;
             self.Outgassing = self.Outgassing+Scaled_Gaussian';
         end
-        function PerformStandardOutgassingPerturbation(self,Time_Array);
-            Carbon_Addition = 20000; %GtC
+        function PerformStandardOutgassingPerturbation(self,Time_Array,Carbon_Addition,Perturbation_Time_Centre,Perturbation_Time_Spread);
+            if nargin<5;
+                Perturbation_Time_Spread = 0.3e6;
+                if nargin<4;
+                    Perturbation_Time_Centre = 1e6;
+                    if nargin<3;
+                        Carbon_Addition = 20000; %GtC
+                    end
+                end
+            end
             Carbon_Addition_kg = (Carbon_Addition.*1e9).*1e6;
             Carbon_Addition_mol = Carbon_Addition_kg./12;
-            self.AddToOutgassing(Time_Array,1e6,0.3e6,Carbon_Addition_mol);            
+            self.AddToOutgassing(Time_Array,Perturbation_Time_Centre,Perturbation_Time_Spread,Carbon_Addition_mol);            
         end
         
     end
