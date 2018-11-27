@@ -1,3 +1,5 @@
+clear
+
 Change_Times = 10e6;
 Magnesium_Change_Times = Change_Times;
 Calcium_At_Change = [10;18];
