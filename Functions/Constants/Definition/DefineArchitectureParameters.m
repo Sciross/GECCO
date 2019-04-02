@@ -10,7 +10,7 @@ function Architecture = DefineArchitectureParameters(Architecture);
         
     Architecture.Mixing_Coefficient = 3; %m/yr
     
-    if ispc;
+    if (ispc || ismac);
         load('./../Resources/Hypsometry.mat');
     elseif isunix;
         load('/home/rw12g11/Queen_Model/Resources/Hypsometry.mat');

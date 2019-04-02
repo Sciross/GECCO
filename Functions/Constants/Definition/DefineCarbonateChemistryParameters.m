@@ -16,7 +16,7 @@ function Carbonate_Chemistry = DefineCarbonateChemistryParameters(Carbonate_Chem
 
     % Run Functions for Carbonate Chemistry
     % Calculate carbonate chemistry constants and their correction
-    if ispc;
+    if (ispc || ismac);
         Temp = load('./../Resources/Coefficients.mat');
     elseif isunix;        
         Temp = load('/home/rw12g11/Queen_Model/Resources/Coefficients.mat');
