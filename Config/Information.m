@@ -1,7 +1,7 @@
 classdef Information < handle
     properties
         Model_Name = "Queen";
-        Version_Number = 0.2;
+        Version_Number = "1.0.1";
         Version_Codename = "House";
         Output_Filepath = "";
         Output_Filename = "";

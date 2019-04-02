@@ -852,7 +852,7 @@ classdef GECCO < handle
                         
                         % Email
                         if ispc;
-                            sendtheemail('ross.whiteford@soton.ac.uk','Model Run Complete',['Your model run finished at ',char(datetime('now','Format','HH:mm:ss'))])
+                            %
                         end
                     end
 %                 catch ME
