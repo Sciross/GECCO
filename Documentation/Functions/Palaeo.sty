@@ -1,0 +1,91 @@
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{Palaeo}
+\RequirePackage{xspace}
+\RequirePackage{wasysym}
+
+% Make degree symbol
+\newcommand{\degrees}{$^{\circ}$}
+
+% Make degreesC symbol
+\newcommand{\degreesC}{$^{\circ}$C\xspace}
+
+\newcommand*{\BoldCode}{bx}
+\newcommand*{\COTwo}{%
+  \ifx\f@series\BoldCode CO$\mathbf{_2}$\xspace
+  \else CO${_2}$\xspace
+  \fi}
+
+% Make CO3
+\newcommand{\COThree}{CO$_3^{2-}$\xspace}
+
+% Make HCO3
+\newcommand{\HCOThree}{HCO$_3^-$\xspace}
+
+% Make H2CO3
+\newcommand{\HTwoCOThree}{H$_2$CO$_3$\xspace}
+
+% Make Ca2+
+\newcommand{\Ca}{Ca$^{2+}$\xspace}
+
+% Make CaCO3
+\newcommand{\CaCOThree}{CaCO$_3$\xspace}
+
+% Make Less Than
+\newcommand{\lt}{$<$}
+
+% Make Greater Than
+\newcommand{\gt}{$>$}
+
+% Figure Reference
+\newcommand{\refFigure}[1]{Figure~\ref{Figure:#1}\xspace}
+\newcommand{\refFigures}[2]{Figures~\ref{Figure:#1}--\ref{Figure:#2}\xspace}
+\newcommand{\labelFigure}[1]{\label{Figure:#1}}
+
+% Equation Reference
+\newcommand{\refEquation}[1]{Equation~\ref{Equation:#1}\xspace}
+\newcommand{\refEquations}[2]{Equations~\ref{Equation:#1}--\ref{Equation:#2}\xspace}
+\newcommand{\labelEquation}[1]{\label{Equation:#1}}
+
+% Appendix Reference
+\newcommand{\refAppendix}[1]{Appendix~\ref{Appendix:#1}\xspace}
+\newcommand{\labelAppendix}[1]{\label{Appendix:#1}}
+
+% Section Reference
+\newcommand{\refSection}[1]{Section~\ref{Section:#1}\xspace}
+\newcommand{\refSections}[2]{Sections~\ref{Section:#1}--\ref{Section:#2}\xspace}
+\newcommand{\labelSection}[1]{\label{Section:#1}}
+
+% Table Reference
+\newcommand{\refTable}[1]{Table~\ref{Table:#1}\xspace}
+\newcommand{\labelTable}[1]{\label{Table:#1}}
+
+% Chapter Reference
+\newcommand{\refChapter}[1]{Chapter~\ref{Chapter:#1}\xspace}
+\newcommand{\labelChapter}[1]{\label{Chapter:#1}}
+
+% Make approximately
+\newcommand{\about}{$\sim$}
+
+% Make dels
+\newcommand{\delO}{$\delta^{18}$O\xspace}
+\newcommand{\delC}{$\delta^{13}$C\xspace}
+\newcommand{\delB}{$\delta^{11}$B\xspace}
+
+% Times 10^
+\newif\ifstartedinmathmode
+
+\newcommand{\e}[1]{%
+\ifmmode\startedinmathmodetrue\else\startedinmathmodefalse\fi
+\ifstartedinmathmode\times10^{#1} \else$\times$10\textsuperscript{#1}\xspace\fi
+}
+
+% m^
+\newcommand{\m}[1]{m$^{#1}$\xspace}
+
+% Permille
+\newcommand{\permille}{\permil\xspace}
+
+% Long underscore
+\newcommand{\lu}{\underline{\hspace{0.2cm}}}
+
+\endinput
