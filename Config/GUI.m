@@ -39,7 +39,7 @@ classdef GUI < handle;
         PertMatrix = {cell(0,7)};
         % Variable Components
 %         TransTableUI
-        TransMatrix = {cell(0,5)};
+        TransMatrix = {cell(0,6)};
         % Log Components
         LogMessages = cell(1);
         LogBoxUI
@@ -830,6 +830,8 @@ classdef GUI < handle;
                 
                 if ~isempty(self.TransMatrix) && size(self.TransMatrix{1},1)>0;
                     self.PertTransTableUI.Data = self.TransMatrix{self.SelectedRun};
+                else
+                    self.PertTransTableUI.Data = {};%self.TransMatrix;
                 end
             end
         end
@@ -901,13 +903,15 @@ classdef GUI < handle;
         function RemovePerturbation(self,src,event);
         % Removes perturbation
             % Removes the currently chosen row from the table
-            self.PertTableUI.Data = [self.PertTableUI.Data(1:self.SelectedPert-1,:);self.PertTableUI.Data(self.SelectedPert+1:end,:)];
+%             self.PertTableUI.Data = [self.PertTableUI.Data(1:self.SelectedPert-1,:);self.PertTableUI.Data(self.SelectedPert+1:end,:)];
+            self.PertMatrix{self.SelectedRun} = [self.PertMatrix{self.SelectedRun}(1:self.SelectedPert(1)-1,:);self.PertMatrix{self.SelectedRun}((self.SelectedPert(1)+1):end,:)];
+            self.UpdatePerturbationTable(src,event);
         end
         function UpdatePerturbationTable(self,src,event);
         % Updates the perturbation table display
             % If the caller is from adding a new Chunk
             if strcmp(src.Tag,'ChangeSelector');
-            elseif strcmp(src.Tag,'AddChangeButton') || isempty(src.Tag) || strcmp(src.Tag,'TabChange');
+            elseif strcmp(src.Tag,'AddChangeButton') || strcmp(src.Tag,'RmChangeButton') || isempty(src.Tag) || strcmp(src.Tag,'TabChange');
                 self.PertTransTableUI.Data = self.PertMatrix{self.SelectedRun};
             elseif strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton');
                 ChunkStrings = num2str(1:numel(self.Gecco.Runs(self.SelectedRun).Chunks));
@@ -988,7 +992,7 @@ classdef GUI < handle;
                 self.UpdateLogBox("Unknown error in perturbation table update");
             end
             
-            if ~(strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton') || strcmp(src.Tag,'AddChangeButton') || strcmp(src.Tag,'TabChange'));
+            if ~(strcmp(src.Tag,'ChunkTableAddButton') || strcmp(src.Tag,'ChunkTableRemoveButton') || strcmp(src.Tag,'AddChangeButton') || strcmp(src.Tag,'RmChangeButton') || strcmp(src.Tag,'TabChange'));
                 self.PertMatrix{self.SelectedRun} = src.Data;
             end
         end
