@@ -813,7 +813,9 @@ classdef GUI < handle;
                 self.PertTransTableUI.ColumnWidth = {50,40,60,60,110,40,180};
                 
                 if ~isempty(self.PertMatrix) && size(self.PertMatrix{1},1)>0;
-                    self.PertTransTableUI.Data = self.PertMatrix{self.SelectedRun};
+                    self.PertTransTableUI.Data = self.PertMatrix{self.SelectedRun};               
+                else
+                    self.PertTransTableUI.Data = {};
                 end
             else
                 ChunkStrings = num2str(1:numel(self.Gecco.Runs(self.SelectedRun).Chunks));
@@ -831,7 +833,7 @@ classdef GUI < handle;
                 if ~isempty(self.TransMatrix) && size(self.TransMatrix{1},1)>0;
                     self.PertTransTableUI.Data = self.TransMatrix{self.SelectedRun};
                 else
-                    self.PertTransTableUI.Data = {};%self.TransMatrix;
+                    self.PertTransTableUI.Data = {};
                 end
             end
         end
@@ -1495,7 +1497,7 @@ classdef GUI < handle;
                                                'Units','Normalized',...
                                                'Position',ChunkTableAddButtonUI.Position+[0,-self.ButtonThinSpacing(2),0,0],...
                                                'String','-',...
-                                               'Callback',@self.RunTableRemoveEntry,...
+                                               'Callback',@self.RemoveChunkCallback,...
                                                'Tag','ChunkTableRemoveButton',...
                                                'Parent',self.RunTabHandles{self.SelectedTab});
                 RunLoadButtonUI = uicontrol('Style','pushbutton',...
